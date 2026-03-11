@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Implementation Plan — Mastering Diabetes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #834CD2;
+            --primary-dark: #534FCD;
+        }
+        @page { size: letter; margin: 0; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            color: #1a1a2e;
+            line-height: 1.6;
+            background: #f1f5f9;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .page {
+            width: 8.5in;
+            min-height: 11in;
+            padding: 0;
+            page-break-after: always;
+            position: relative;
+            overflow: hidden;
+            margin: 0 auto;
+            background: white;
+        }
+        .page:last-child { page-break-after: auto; }
+        @media print {
+            body { background: white; }
+            .page { page-break-after: always !important; page-break-inside: avoid !important; height: 11in !important; overflow: hidden !important; }
+            .page:last-child { page-break-after: auto !important; }
+            h2, h3, .section-subtitle { break-after: avoid; page-break-after: avoid; orphans: 3; widows: 3; }
+            .info-card, .detail-card, .phase-card, .setter-card, .config-card { break-inside: avoid; page-break-inside: avoid; }
+        }
+        .cover {
+            background: linear-gradient(135deg, #050507 0%, #0a0a1a 40%, #0d1528 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 3in 1.2in;
+            position: relative;
+        }
+        .cover::before {
+            content: '';
+            position: absolute;
+            top: -20%;
+            right: -10%;
+            width: 60%;
+            height: 80%;
+            background: radial-gradient(ellipse, rgba(131, 76, 210, 0.08), transparent 70%);
+            border-radius: 50%;
+        }
+        .cover-logo { font-size: 14px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; color: var(--primary); margin-bottom: 40px; position: relative; z-index: 1; }
+        .cover h1 { font-size: 42px; font-weight: 800; line-height: 1.15; margin-bottom: 20px; position: relative; z-index: 1; }
+        .cover h1 span { color: var(--primary); }
+        .cover-subtitle { font-size: 18px; color: #94a3b8; font-weight: 400; margin-bottom: 60px; position: relative; z-index: 1; }
+        .cover-meta { position: relative; z-index: 1; font-size: 13px; color: #64748b; line-height: 2; }
+        .cover-meta strong { color: #94a3b8; }
+        .cover-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--primary), var(--primary-dark)); }
+        .content { padding: 0.8in 1.0in; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid #e2e8f0; margin-bottom: 30px; }
+        .page-header-logo { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--primary); }
+        .page-header-title { font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+        h2 { font-size: 24px; font-weight: 800; color: #0a0a1a; margin-bottom: 6px; }
+        h2 span { color: var(--primary); }
+        .section-subtitle { font-size: 13px; color: #64748b; margin-bottom: 24px; }
+        h3 { font-size: 16px; font-weight: 700; color: #0a0a1a; margin-bottom: 6px; }
+        p { font-size: 12.5px; color: #374151; margin-bottom: 12px; }
+        .intro-text { font-size: 13.5px; color: #374151; line-height: 1.8; margin-bottom: 25px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+        .info-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 20px; }
+        .info-card.full-width { grid-column: 1 / -1; }
+        .info-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); margin-bottom: 4px; }
+        .info-value { font-size: 14px; font-weight: 600; color: #0a0a1a; line-height: 1.4; }
+        .info-value-sm { font-size: 12px; font-weight: 400; color: #475569; line-height: 1.6; }
+        .detail-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 22px; margin-bottom: 14px; }
+        .detail-card h3 { font-size: 14px; display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+        .detail-card p { font-size: 12px; color: #475569; margin-bottom: 0; line-height: 1.6; }
+        .client-quote { background: linear-gradient(135deg, #050507, #0d1528); border-radius: 12px; padding: 22px 26px; margin: 20px 0; position: relative; }
+        .client-quote::before { content: '\201C'; font-size: 48px; font-weight: 800; color: var(--primary); position: absolute; top: 8px; left: 18px; opacity: 0.5; }
+        .client-quote p { color: #e2e8f0; font-size: 13px; font-style: italic; line-height: 1.7; margin-bottom: 0; padding-left: 20px; }
+        .client-quote .quote-attr { color: #94a3b8; font-size: 11px; font-style: normal; margin-top: 8px; padding-left: 20px; }
+        .setter-card { background: linear-gradient(135deg, #f0f0ff, #e8e0ff); border: 1px solid #c4b5fd; border-radius: 10px; padding: 18px 22px; margin-bottom: 14px; }
+        .setter-card h3 { font-size: 14px; color: var(--primary-dark); margin-bottom: 4px; }
+        .setter-card p { font-size: 12px; color: #3b3270; margin-bottom: 0; line-height: 1.6; }
+        .setter-card .setter-detail { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .setter-tag { background: rgba(131, 76, 210, 0.15); color: var(--primary-dark); font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+        .phase-card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px 22px; margin-bottom: 14px; border-left: 4px solid var(--primary); }
+        .phase-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--primary); margin-bottom: 4px; }
+        .phase-card h3 { font-size: 15px; margin-bottom: 6px; }
+        .phase-card ul { margin: 6px 0 0 16px; padding: 0; }
+        .phase-card ul li { font-size: 12px; color: #475569; margin-bottom: 3px; line-height: 1.5; }
+        .metrics-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-top: 20px; }
+        .metric-card { background: linear-gradient(135deg, #050507, #0d1528); color: white; border-radius: 12px; padding: 20px; text-align: center; }
+        .metric-number { font-size: 32px; font-weight: 800; color: var(--primary); line-height: 1.1; }
+        .metric-label { font-size: 11px; color: #94a3b8; margin-top: 4px; line-height: 1.4; }
+        .callout-box { background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border: 1px solid #7dd3fc; border-radius: 10px; padding: 16px 20px; margin: 16px 0; }
+        .callout-box h3 { font-size: 13px; color: #0c4a6e; margin-bottom: 4px; }
+        .callout-box p { font-size: 11.5px; color: #0e4f6e; margin-bottom: 0; line-height: 1.6; }
+        .config-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 22px; margin-bottom: 14px; }
+        .config-card h3 { font-size: 14px; margin-bottom: 6px; }
+        .config-card ul { margin: 6px 0 0 16px; padding: 0; }
+        .config-card ul li { font-size: 12px; color: #475569; margin-bottom: 4px; line-height: 1.5; }
+        .confirm-item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 12px; color: #374151; }
+        .confirm-item:last-child { border-bottom: none; }
+        .confirm-check { width: 18px; height: 18px; border: 2px solid #cbd5e1; border-radius: 4px; flex-shrink: 0; margin-top: 1px; }
+        .page-footer { position: absolute; bottom: 30px; left: 1.0in; right: 1.0in; display: flex; justify-content: space-between; font-size: 9px; color: #94a3b8; }
+    </style>
+</head>
+<body>
+
+    <!-- PAGE 1: COVER -->
+    <div class="page cover">
+        <div class="cover-logo">CHARLIE AI</div>
+        <h1>Implementation Plan<br>for <span>Mastering Diabetes</span></h1>
+        <div class="cover-subtitle">Your personalized AI setter deployment — built around your funnel, your audience, and your growth goals.</div>
+        <div class="cover-meta">
+            <strong>Prepared:</strong> March 11, 2026
+        </div>
+        <div class="cover-bar"></div>
+    </div>
+
+    <!-- PAGE 2: YOUR BUSINESS AT A GLANCE -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Implementation Plan</div>
+            </div>
+
+            <h2>Your Business at a <span>Glance</span></h2>
+            <div class="section-subtitle">Here's what we captured from our conversation — please confirm everything looks right.</div>
+
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-label">Business</div>
+                    <div class="info-value">Mastering Diabetes</div>
+                    <div class="info-value-sm">masteringdiabetes.org</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Point of Contact</div>
+                    <div class="info-value">Robby Barbaro</div>
+                    <div class="info-value-sm">Co-founder. Co-author of the NYT bestselling book <em>Mastering Diabetes</em>.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Industry</div>
+                    <div class="info-value">Health &amp; Wellness Coaching</div>
+                    <div class="info-value-sm">Plant-based method to reverse insulin resistance — covering Type 1, Type 1.5, Type 2, Prediabetes, and Gestational Diabetes. Peer-reviewed published research backing the method.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Offer Structure</div>
+                    <div class="info-value">Webinar → Closer Call → Coaching Program</div>
+                    <div class="info-value-sm">Live Tuesday webinar with a "book a call" CTA. Entry at $3,500 US, with upsells to higher-tier coaching. Also sell the NYT bestselling book as a lower-ticket entry point.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Primary Lead Channels</div>
+                    <div class="info-value">Facebook · Instagram · Email List · Webinars</div>
+                    <div class="info-value-sm">217,000+ Facebook followers. Posts generate 400–1,100+ comments each. ManyChat for keyword triggers (guide, training, well). Also running ads. Large email list with 50%+ open rate.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Lead Volume</div>
+                    <div class="info-value">1,200 New Leads/Week</div>
+                    <div class="info-value-sm">1,200 new emails/phone numbers per week, plus hundreds to thousands of Facebook and Instagram DM interactions from comment engagement.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">CRM &amp; Tools</div>
+                    <div class="info-value">GoHighLevel · iClosed · Calendly</div>
+                    <div class="info-value-sm">GHL for CRM and automations. iClosed + Calendly for booking. ManyChat for comment keyword triggers. A2P registered inside GHL. Currently using GHL native SMS (not Twilio).</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Key Metrics</div>
+                    <div class="info-value">58% Show Rate · 46% Close Rate</div>
+                    <div class="info-value-sm">46% close rate on calls that happen — strong indicator of excellent brand trust. 58% show rate — significant room for improvement (target: 70–80%). 27% overall conversion from lead to sale.</div>
+                </div>
+                <div class="info-card full-width">
+                    <div class="info-label">Current Team &amp; Setup</div>
+                    <div class="info-value-sm">One human setter (Sophia) via Cole Gordon's team — currently calling webinar leads only. Robby also takes sales calls directly from his iPhone. No one is working the non-webinar leads (social DMs, email list, past prospects). At this volume, a business would typically have 5–6 setters working the full funnel.</div>
+                </div>
+                <div class="info-card full-width">
+                    <div class="info-label">The Brand Challenge</div>
+                    <div class="info-value-sm">Mastering Diabetes has a counterintuitive message: eat high-carb, plant-based foods (bananas, potatoes, rice) to reverse diabetes. This means prospects need more education and social proof before they're ready to buy. The funnel is built around nurturing via email, webinars, and testimonials — it usually takes multiple webinar attendances before someone books a call. This education-heavy approach works (46% close rate proves it), but it also means there's a massive pool of partially-educated leads sitting in the funnel that nobody is following up with.</div>
+                </div>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Mastering Diabetes</span>
+        </div>
+    </div>
+
+    <!-- PAGE 3: WHAT WE HEARD -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Discovery Summary</div>
+            </div>
+
+            <h2>What We <span>Heard</span></h2>
+            <div class="section-subtitle">The key challenges and opportunities you shared with us</div>
+
+            <div class="detail-card">
+                <h3>📉 58% Show Rate — Biggest Quick Win</h3>
+                <p>Your close rate when people actually show up is 46% — that's excellent. It tells us your brand credibility and webinar content are doing their job. The problem is 42% of booked calls never happen. That's real revenue walking away. A show rate agent impersonating the closer — texting right after booking, setting expectations, confirming they'll be there — typically pushes this to 70–80% for our clients. At your volume, that's dozens of additional sales calls per month just from people who already wanted to talk.</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>🔥 1,200 Leads/Week with 1 Setter</h3>
+                <p>You're generating 1,200 new email/phone leads per week, plus hundreds of social DM interactions — and you have one setter working webinar leads only. Your setter is doing phone calls to the highest-intent leads (post-webinar), which is the right prioritization. But everyone else — the Instagram commenters, the people who registered but didn't attend, the ones who attended but didn't book — nobody is following up with them. At your volume, you'd typically have 5–6 setters. Charlie covers that gap instantly.</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>💬 Social Engagement Going Untouched</h3>
+                <p>Your Facebook posts are generating 400–1,100+ comments each. People are writing "guide," "training," "well" — actively raising their hand. ManyChat sends the initial resource, but there's no persistent follow-up conversation after that. These are warm leads expressing interest in your content, and right now nobody is having a conversation with them to move them toward a webinar or a call. Charlie lives in the DMs and follows up until they book or tell us to stop.</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>⚠️ SMS Compliance Warnings</h3>
+                <p>You're getting non-compliant messaging warnings from GHL despite having A2P registration done. We're investigating this — Drew flagged it to our CTO after the call. Regardless, getting messaging infrastructure right is critical before scaling outbound. We'll work together on kickoff to ensure deliverability is solid before Charlie starts texting at volume.</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>📱 Personal iPhone for Speed-to-Lead</h3>
+                <p>You mentioned using your personal iPhone to text leads because blue bubbles and read receipts make a difference. That's smart instinct — iMessage outperforms SMS on open and reply rates. But it doesn't scale. LINQ ($500/month + $250/line) enables iMessage-quality outreach at scale: 50 new leads/day per line with blue bubbles and read receipts, without touching your personal phone. Worth exploring once Charlie is dialed in.</p>
+            </div>
+
+            <div class="client-quote">
+                <p>We're getting 1,200 people to give us their email or phone number per week. That doesn't include hundreds and hundreds and thousands on Facebook and Instagram DMs. And I only have one setter.</p>
+                <p class="quote-attr">— Robby Barbaro, Discovery Call</p>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Mastering Diabetes</span>
+        </div>
+    </div>
+
+    <!-- PAGE 4: YOUR AI SETTERS -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Your AI Setters</div>
+            </div>
+
+            <h2>What We're <span>Building</span> for You</h2>
+            <div class="section-subtitle">Specialized AI agents deployed in phases — starting with your biggest opportunities</div>
+
+            <p class="intro-text" style="margin-bottom: 18px; font-weight: 600; color: #0a0a1a; font-size: 15px;">Phase 1 — Weeks 1–2: Top of Funnel + Show Rate</p>
+            <p class="intro-text" style="margin-top: 0;">Four agents targeting your two biggest levers: more calls booked from existing traffic, and more of those calls actually happening.</p>
+
+            <div class="setter-card">
+                <h3>💬 Instagram &amp; Facebook DM Setter</h3>
+                <p>Your primary agent. When someone comments a keyword (guide, training, well, etc.) on any post, Charlie picks up the DM conversation. Sends the requested resource, then follows up: "Did you get a chance to check it out? What resonated most?" Uses gap selling to surface their goal ("What are you hoping to achieve with your health?"), uncovers the hurdle ("What's been the biggest challenge?"), and qualifies them. Qualified leads get booked on a call. Unqualified leads get tagged for future low-ticket offers. Charlie follows up persistently — until they book or tell us to stop. ManyChat stays for new follower outbound only.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">Instagram DM</span>
+                    <span class="setter-tag">Facebook DM</span>
+                    <span class="setter-tag">60-Second Response</span>
+                    <span class="setter-tag">Gap Selling</span>
+                    <span class="setter-tag">Conversational Qualification</span>
+                    <span class="setter-tag">Calendly Integration</span>
+                    <span class="setter-tag">Persistent Follow-up</span>
+                </div>
+            </div>
+
+            <div class="setter-card">
+                <h3>📅 Webinar Show Rate Agent</h3>
+                <p>When someone registers for your Tuesday webinar, Charlie reaches out as Robby's assistant with a concierge-style conversation. "Hey — excited to have you on the webinar. Just curious, what are you hoping to get out of it?" The goal: get them to write down their #1 challenge. This is the strongest predictor of whether they'll attend and whether they'll close. This agent typically increases webinar show rates by 20–30%. At your scale — hundreds of registrants per week — that's a meaningful jump in who actually shows up to experience your live content.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">Webinar Registrant Outreach</span>
+                    <span class="setter-tag">Gap Sell</span>
+                    <span class="setter-tag">Challenge Capture</span>
+                    <span class="setter-tag">SMS via GHL</span>
+                    <span class="setter-tag">20–30% Show Rate Lift</span>
+                </div>
+            </div>
+
+            <div class="setter-card">
+                <h3>🎯 Post-Webinar Follow-Up Agent</h3>
+                <p>Everyone who registers for the webinar and doesn't book a call afterward — Charlie hunts them down. "Did you get a chance to catch the webinar? We covered a lot on reversing insulin resistance — want me to share some highlights?" Qualifies them and books them on a call. These are people who raised their hand by registering but need one more push. This agent converts the webinar "drop-off" into booked calls without you lifting a finger.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">Webinar Attendee Follow-up</span>
+                    <span class="setter-tag">Registered-But-Didn't-Book</span>
+                    <span class="setter-tag">Content Sharing</span>
+                    <span class="setter-tag">Qualification &amp; Booking</span>
+                    <span class="setter-tag">SMS + DM</span>
+                </div>
+            </div>
+
+            <div class="setter-card">
+                <h3>📈 Call Show Rate Agent</h3>
+                <p>Your show rate is 58% — we're targeting 70–80%. Five minutes after someone books a call, Charlie texts from the closer's number: "Hey, it's [closer name] — saw the appointment come through. Look forward to our call. Just a heads up, we don't hold our schedule open if we miss the call." Confirms they've reviewed any pre-call content. Drops a testimonial or VSL as pre-sales collateral. Because this message comes from the actual closer, prospects are significantly more likely to show up.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">Texts as the Closer</span>
+                    <span class="setter-tag">5 Min After Booking</span>
+                    <span class="setter-tag">Expectation Setting</span>
+                    <span class="setter-tag">Pre-Call Collateral</span>
+                    <span class="setter-tag">Target: 70–80% Show Rate</span>
+                </div>
+            </div>
+
+            <div class="metrics-grid" style="margin-top: 16px;">
+                <div class="metric-card">
+                    <div class="metric-number">1,200+</div>
+                    <div class="metric-label">Leads per week<br>now getting followed up</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number">70-80%</div>
+                    <div class="metric-label">Target show rate<br>(currently 58%)</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number">&lt;60s</div>
+                    <div class="metric-label">Response time<br>on every DM</div>
+                </div>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Mastering Diabetes</span>
+        </div>
+    </div>
+
+    <!-- PAGE 5: FUTURE AGENTS -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Future Agents</div>
+            </div>
+
+            <h2>What Comes <span>Next</span></h2>
+            <div class="section-subtitle">Once Phase 1 is optimized, these agents unlock even more revenue from your existing audience</div>
+
+            <div class="setter-card">
+                <h3>🔄 Referral &amp; NPS Agent</h3>
+                <p>People who have reversed their diabetes are surrounded by others dealing with the same condition. This agent reaches out to past clients, checks in on their progress, gets them to rate Mastering Diabetes 1–10, and provides a personalized blurb and link to share with friends and family. Referral leads are the highest-quality leads in any business — and in a health community like yours, the network effects are powerful.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">Past Client Outreach</span>
+                    <span class="setter-tag">NPS Score Capture</span>
+                    <span class="setter-tag">Referral Link Distribution</span>
+                    <span class="setter-tag">Community Network Effect</span>
+                </div>
+            </div>
+
+            <div class="setter-card">
+                <h3>📚 Low-Ticket Downsell Agent</h3>
+                <p>Leads who can't afford the coaching program or don't qualify for a call — Charlie sells the book. "I totally understand the timing isn't right for the full program. A lot of people start with the book — it covers the full method and you can begin seeing results on your own. Want me to send you the link?" This ensures no lead is wasted. Some percentage of book buyers will come back for coaching when they're ready.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">Unqualified Lead Recovery</span>
+                    <span class="setter-tag">Book Sales</span>
+                    <span class="setter-tag">Future Upsell Pipeline</span>
+                </div>
+            </div>
+
+            <div class="setter-card">
+                <h3>♻️ Database Reactivation Agent</h3>
+                <p>You have a massive email list and years of accumulated leads. When you launch a new offer, a new challenge, or a special event — Charlie can reach out to your entire database with personalized, contextual messages. Not a blast email. An actual conversation: "Hey, we haven't connected in a while. We just launched something new — curious if this is still something you're working on?"</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">Full Database Outreach</span>
+                    <span class="setter-tag">New Offer Launches</span>
+                    <span class="setter-tag">Contextual Messaging</span>
+                    <span class="setter-tag">Conversational Reactivation</span>
+                </div>
+            </div>
+
+            <div class="setter-card">
+                <h3>📣 DM Ad Setter</h3>
+                <p>When you start running DM ads (click-to-message ads on Instagram/Facebook), Charlie is the person on the other end of the conversation. The ad sends traffic directly into a DM conversation with Charlie, who qualifies and books — no landing page needed. Some of our clients generate 100% of their revenue from this channel alone.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">Click-to-Message Ads</span>
+                    <span class="setter-tag">No Landing Page Needed</span>
+                    <span class="setter-tag">Direct DM Qualification</span>
+                    <span class="setter-tag">High-Intent Leads</span>
+                </div>
+            </div>
+
+            <div class="callout-box">
+                <h3>💡 The Webinar Skip Play</h3>
+                <p>Some leads will be so qualified from the DM conversation that we can skip the webinar entirely and book them straight on a call — using the webinar as follow-up collateral to help close the deal. Worth testing once your DM setter is dialed in and we can see qualification data.</p>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Mastering Diabetes</span>
+        </div>
+    </div>
+
+    <!-- PAGE 6: CONFIGURATION DETAILS -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Configuration Details</div>
+            </div>
+
+            <h2>How We'll <span>Configure</span> Charlie</h2>
+            <div class="section-subtitle">Technical and brand setup details — please confirm or correct anything that needs updating</div>
+
+            <div class="config-card">
+                <h3>🎨 Brand Voice &amp; Persona</h3>
+                <ul>
+                    <li><strong>Persona:</strong> Charlie shows up as Robby's assistant — warm, knowledgeable, genuinely interested in each person's health journey. Mirrors the Mastering Diabetes brand voice.</li>
+                    <li><strong>Custom training:</strong> We'll upload videos of Robby talking on Instagram/Facebook to build a persona that sounds like him — his energy, his way of explaining things, his enthusiasm.</li>
+                    <li><strong>Key behavior:</strong> Charlie should redirect methodology questions to the webinar or call — "Great question, that's exactly what Robby covers in the live training." Keep them curious, not over-educated in the DM.</li>
+                    <li><strong>Tone calibration:</strong> Professional but approachable. This demographic is dealing with a serious health condition — empathetic without being clinical. Think "knowledgeable friend" not "doctor's office."</li>
+                </ul>
+            </div>
+
+            <div class="config-card">
+                <h3>⚙️ Technical Integration</h3>
+                <ul>
+                    <li><strong>CRM:</strong> GoHighLevel — deal stages updated automatically. Charlie moves qualified leads to "Booked," webinar registrants through the appropriate pipeline.</li>
+                    <li><strong>Booking:</strong> Calendly (natively integrated for conversational booking). iClosed integration is in development — for now, iClosed bookings would use a calendar link. Recommend starting with Calendly for the conversational advantage.</li>
+                    <li><strong>Instagram &amp; Facebook DM:</strong> Charlie handles all comment-triggered DMs natively. Replaces ManyChat for keyword comments.</li>
+                    <li><strong>ManyChat:</strong> Keep for new follower outbound ONLY. ManyChat triggers the intro, Charlie takes over the conversation from there.</li>
+                    <li><strong>SMS:</strong> Currently on GHL native. We need to investigate the A2P compliance warnings before scaling. May recommend Twilio integration depending on findings.</li>
+                    <li><strong>LINQ (optional):</strong> iMessage-quality outreach at scale — $500/month + $250/line. 50 new leads/day per line with blue bubbles and read receipts. A2P built in. Not required to start, but worth considering to replace the personal iPhone workflow.</li>
+                </ul>
+            </div>
+
+            <div class="config-card">
+                <h3>🧠 Knowledge Base (What We'll Feed Charlie)</h3>
+                <ul>
+                    <li>masteringdiabetes.org — program details, method overview, testimonials, credibility markers</li>
+                    <li>Robby's Instagram/Facebook videos — for persona building and voice matching</li>
+                    <li>Webinar registration page and content — so Charlie can intelligently discuss what's covered</li>
+                    <li>Key testimonials — real reversal stories Charlie can reference naturally ("We just had someone drop their A1C from 12.9 to 5.9")</li>
+                    <li>Common objections — "I can't eat carbs with diabetes," "I've tried everything," "How is this different from keto?"</li>
+                    <li>Book details — for low-ticket downsell conversations</li>
+                    <li>Qualification criteria — who is a good fit for coaching vs. book-only vs. not ready yet</li>
+                </ul>
+            </div>
+
+            <div class="config-card">
+                <h3>📊 Data Flow &amp; Custom Fields</h3>
+                <ul>
+                    <li><strong>Goal capture:</strong> Charlie surfaces what the prospect wants ("drop my A1C below 6," "lose 30 pounds," "get off medication") → pushed to GHL custom field</li>
+                    <li><strong>Hurdle capture:</strong> What's been stopping them ("I've tried low-carb and it's not working," "my doctor says I need insulin") → separate field</li>
+                    <li><strong>Why this matters:</strong> Every downstream agent — show rate, post-call follow-up, reactivation — references these fields for personalized messaging</li>
+                    <li><strong>Webinar tracking:</strong> Registered, attended, didn't attend, attended-didn't-book — Charlie knows which stage each lead is in</li>
+                </ul>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Mastering Diabetes</span>
+        </div>
+    </div>
+
+    <!-- PAGE 7: IMPLEMENTATION ROADMAP -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Implementation Roadmap</div>
+            </div>
+
+            <h2>Your <span>Roadmap</span></h2>
+            <div class="section-subtitle">From kickoff to fully operational — typically live within 5–7 days</div>
+
+            <div class="phase-card">
+                <div class="phase-label">Phase 1 — Weeks 1–2: Build, Test &amp; Launch</div>
+                <h3>All 4 Primary Agents</h3>
+                <ul>
+                    <li><strong>Monday: Kickoff call (1 hour)</strong> — Build the DM setter together with your implementation specialist (Whitney). Load knowledge base, set Robby's persona and voice, define qualification criteria, connect GHL + Calendly integrations.</li>
+                    <li><strong>Tuesday–Wednesday: Sparring</strong> — Roleplay as prospects in the playground. Test keyword triggers, follow-up sequences, qualification conversations, edge cases. Give real-time feedback until Charlie is performing at a high clip.</li>
+                    <li><strong>Thursday: Webinar agents</strong> — Configure the webinar show rate agent and post-webinar follow-up agent. Test against your Tuesday webinar flow.</li>
+                    <li><strong>Friday: Call show rate agent + integration testing</strong> — Set up the closer impersonation agent. Test all GHL triggers, Calendly booking, custom field pushes, ManyChat handoff.</li>
+                    <li><strong>Week 2: Optimize</strong> — Monitor conversations, refine responses, adjust qualification thresholds. Weekly optimization call with the team.</li>
+                    <li>Keep Sophia doing phone calls to webinar leads — she stays. Charlie handles everything else.</li>
+                </ul>
+            </div>
+
+            <div class="phase-card">
+                <div class="phase-label">Phase 2 — Month 2+: Expand</div>
+                <h3>Referral, Downsell &amp; Reactivation Agents</h3>
+                <ul>
+                    <li>Once Phase 1 agents are optimized and performing, add referral/NPS agent to leverage your community</li>
+                    <li>Activate low-ticket downsell for unqualified leads (sell the book)</li>
+                    <li>Launch database reactivation when ready — reach back into your full email list with conversational outreach</li>
+                    <li>Explore DM ads as a new channel with Charlie handling the inbound conversations</li>
+                    <li>Test the "webinar skip" play for highly-qualified DM leads</li>
+                </ul>
+            </div>
+
+            <div class="phase-card">
+                <div class="phase-label">Ongoing Support</div>
+                <h3>We Don't Disappear After Launch</h3>
+                <ul>
+                    <li>Weekly optimization calls — whether it's Charlie performance, marketing strategy, or funnel ideas</li>
+                    <li>Dedicated Slack channel — Drew added personally as escalation point</li>
+                    <li>5 fully managed agents included. Unlimited self-managed after that.</li>
+                    <li>Once you've seen 5–6 agents built and optimized, you'll know the process and can clone and deploy on your own — but we're always available.</li>
+                </ul>
+            </div>
+
+            <div class="callout-box">
+                <h3>⚠️ One Rule</h3>
+                <p>Once an agent is performing — don't touch it. The biggest issue we see is clients making changes to a working agent and cutting their numbers in half. Work with us to optimize; once it's dialed in, let it run.</p>
+            </div>
+
+            <div class="callout-box" style="margin-top: 10px;">
+                <h3>📱 About Sophia (Your Human Setter)</h3>
+                <p>Keep Sophia doing what she's doing — phone calls to webinar leads. Phone calls are especially effective for your demographic, particularly anyone 60+. Charlie will handle the text/DM side at scale. They complement each other — Sophia for voice, Charlie for everything else.</p>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Mastering Diabetes</span>
+        </div>
+    </div>
+
+    <!-- PAGE 8: CONFIRM & NEXT STEPS -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Confirm &amp; Next Steps</div>
+            </div>
+
+            <h2>Please <span>Confirm</span></h2>
+            <div class="section-subtitle">Review the items below so we're fully aligned before kickoff</div>
+
+            <div class="config-card">
+                <h3>📋 Items to Confirm</h3>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Webinar registration page URL</strong> — Share the link so we can map the full registrant → attendee → booked flow for Charlie's agents.</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Calendly vs iClosed</strong> — We recommend starting with Calendly (conversational booking is natively integrated). iClosed integration is in development. Confirm which you'd like Charlie to book into.</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Keyword list</strong> — Confirm the full list of ManyChat keywords (guide, training, well — any others?) so Charlie can handle all comment triggers.</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Closer details</strong> — Who takes the sales calls? Name(s) and scheduling info so the show rate agent can impersonate the right person.</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>SMS compliance</strong> — Forward the GHL warning email to drew@systemsbyai.com (if not already sent). We're investigating with our CTO to get to the bottom of it before scaling.</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Sophia's workflow</strong> — Quick overview of what Sophia currently does: which leads she calls, what script she uses, what hours she's active. Helps us avoid overlap and ensure Charlie complements her.</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Qualification criteria</strong> — What makes someone a good fit vs. a "book buyer" vs. not ready? Any financial thresholds, health conditions, or other filters?</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>LINQ interest</strong> — Want to explore iMessage outreach at scale? Not required to start, but if you want to replace the personal iPhone workflow, we'll set it up alongside Charlie.</div></div>
+            </div>
+
+            <div class="callout-box" style="margin-top: 20px;">
+                <h3>📝 How to Confirm</h3>
+                <p>Simply reply to the email this was shared in with your answers, corrections, or questions. We'll incorporate everything into your kickoff call so we can hit the ground running. No detail is too small — the more we know upfront, the faster Charlie becomes a 10/10.</p>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Mastering Diabetes</span>
+        </div>
+    </div>
+
+    <!-- PAGE 9: NEXT STEPS CTA -->
+    <div class="page" style="background: linear-gradient(135deg, #050507 0%, #0a0a1a 40%, #0d1528 100%); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2in 1.2in; margin: 0 auto;">
+        <div class="cover-logo" style="margin-bottom: 50px;">CHARLIE AI</div>
+        <h2 style="color: white; font-size: 36px; margin-bottom: 16px;">Let's get<br>you started.</h2>
+        <p style="color: #94a3b8; font-size: 15px; max-width: 450px; margin-bottom: 40px;">If everything above looks good, the next step is booking your kickoff call. We'll configure Charlie together and have your first agents live within days.</p>
+        <a href="https://calendly.com/drew-charlie/30min" style="display: inline-block; background: white; color: #0a0a1a; font-size: 15px; font-weight: 700; padding: 14px 40px; border-radius: 50px; text-decoration: none;">Book Your Kickoff Call →</a>
+        <div style="margin-top: 50px;">
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 6px;"><a href="https://charlieai.io" style="color: #834CD2; text-decoration: none;">charlieai.io</a> · <a href="mailto:drew@systemsbyai.com" style="color: #834CD2; text-decoration: none;">drew@systemsbyai.com</a></p>
+        </div>
+        <div class="cover-bar"></div>
+    </div>
+
+</body>
+</html>
