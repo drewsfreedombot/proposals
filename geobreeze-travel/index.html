@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Implementation Plan — Geobreeze Travel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #834CD2;
+            --primary-dark: #534FCD;
+        }
+        @page { size: letter; margin: 0; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            color: #1a1a2e;
+            line-height: 1.6;
+            background: #f1f5f9;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .page {
+            width: 8.5in;
+            min-height: 11in;
+            padding: 0;
+            page-break-after: always;
+            position: relative;
+            overflow: hidden;
+            margin: 0 auto;
+            background: white;
+        }
+        .page:last-child { page-break-after: auto; }
+        @media print {
+            body { background: white; }
+            .page { page-break-after: always !important; page-break-inside: avoid !important; height: 11in !important; overflow: hidden !important; }
+            .page:last-child { page-break-after: auto !important; }
+            h2, h3, .section-subtitle { break-after: avoid; page-break-after: avoid; orphans: 3; widows: 3; }
+            .info-card, .detail-card, .phase-card, .setter-card, .config-card { break-inside: avoid; page-break-inside: avoid; }
+        }
+        .cover {
+            background: linear-gradient(135deg, #050507 0%, #0a0a1a 40%, #0d1528 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 3in 1.2in;
+            position: relative;
+        }
+        .cover::before {
+            content: '';
+            position: absolute;
+            top: -20%;
+            right: -10%;
+            width: 60%;
+            height: 80%;
+            background: radial-gradient(ellipse, rgba(131, 76, 210, 0.08), transparent 70%);
+            border-radius: 50%;
+        }
+        .cover-logo { font-size: 14px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; color: var(--primary); margin-bottom: 40px; position: relative; z-index: 1; }
+        .cover h1 { font-size: 42px; font-weight: 800; line-height: 1.15; margin-bottom: 20px; position: relative; z-index: 1; }
+        .cover h1 span { color: var(--primary); }
+        .cover-subtitle { font-size: 18px; color: #94a3b8; font-weight: 400; margin-bottom: 60px; position: relative; z-index: 1; }
+        .cover-meta { position: relative; z-index: 1; font-size: 13px; color: #64748b; line-height: 2; }
+        .cover-meta strong { color: #94a3b8; }
+        .cover-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--primary), var(--primary-dark)); }
+        .content { padding: 0.8in 1.0in; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid #e2e8f0; margin-bottom: 30px; }
+        .page-header-logo { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--primary); }
+        .page-header-title { font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+        h2 { font-size: 24px; font-weight: 800; color: #0a0a1a; margin-bottom: 6px; }
+        h2 span { color: var(--primary); }
+        .section-subtitle { font-size: 13px; color: #64748b; margin-bottom: 24px; }
+        h3 { font-size: 16px; font-weight: 700; color: #0a0a1a; margin-bottom: 6px; }
+        p { font-size: 12.5px; color: #374151; margin-bottom: 12px; }
+        .intro-text { font-size: 13.5px; color: #374151; line-height: 1.8; margin-bottom: 25px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+        .info-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 20px; }
+        .info-card.full-width { grid-column: 1 / -1; }
+        .info-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); margin-bottom: 4px; }
+        .info-value { font-size: 14px; font-weight: 600; color: #0a0a1a; line-height: 1.4; }
+        .info-value-sm { font-size: 12px; font-weight: 400; color: #475569; line-height: 1.6; }
+        .detail-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 22px; margin-bottom: 14px; }
+        .detail-card h3 { font-size: 14px; display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+        .detail-card p { font-size: 12px; color: #475569; margin-bottom: 0; line-height: 1.6; }
+        .client-quote { background: linear-gradient(135deg, #050507, #0d1528); border-radius: 12px; padding: 22px 26px; margin: 20px 0; position: relative; }
+        .client-quote::before { content: '\201C'; font-size: 48px; font-weight: 800; color: var(--primary); position: absolute; top: 8px; left: 18px; opacity: 0.5; }
+        .client-quote p { color: #e2e8f0; font-size: 13px; font-style: italic; line-height: 1.7; margin-bottom: 0; padding-left: 20px; }
+        .client-quote .quote-attr { color: #94a3b8; font-size: 11px; font-style: normal; margin-top: 8px; padding-left: 20px; }
+        .setter-card { background: linear-gradient(135deg, #f0f0ff, #e8e0ff); border: 1px solid #c4b5fd; border-radius: 10px; padding: 18px 22px; margin-bottom: 14px; }
+        .setter-card h3 { font-size: 14px; color: var(--primary-dark); margin-bottom: 4px; }
+        .setter-card p { font-size: 12px; color: #3b3270; margin-bottom: 0; line-height: 1.6; }
+        .setter-card .setter-detail { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .setter-tag { background: rgba(131, 76, 210, 0.15); color: var(--primary-dark); font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+        .phase-card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px 22px; margin-bottom: 14px; border-left: 4px solid var(--primary); }
+        .phase-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--primary); margin-bottom: 4px; }
+        .phase-card h3 { font-size: 15px; margin-bottom: 6px; }
+        .phase-card ul { margin: 6px 0 0 16px; padding: 0; }
+        .phase-card ul li { font-size: 12px; color: #475569; margin-bottom: 3px; line-height: 1.5; }
+        .metrics-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-top: 20px; }
+        .metric-card { background: linear-gradient(135deg, #050507, #0d1528); color: white; border-radius: 12px; padding: 20px; text-align: center; }
+        .metric-number { font-size: 32px; font-weight: 800; color: var(--primary); line-height: 1.1; }
+        .metric-label { font-size: 11px; color: #94a3b8; margin-top: 4px; line-height: 1.4; }
+        .callout-box { background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border: 1px solid #7dd3fc; border-radius: 10px; padding: 16px 20px; margin: 16px 0; }
+        .callout-box h3 { font-size: 13px; color: #0c4a6e; margin-bottom: 4px; }
+        .callout-box p { font-size: 11.5px; color: #0e4f6e; margin-bottom: 0; line-height: 1.6; }
+        .config-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 22px; margin-bottom: 14px; }
+        .config-card h3 { font-size: 14px; margin-bottom: 6px; }
+        .config-card ul { margin: 6px 0 0 16px; padding: 0; }
+        .config-card ul li { font-size: 12px; color: #475569; margin-bottom: 4px; line-height: 1.5; }
+        .confirm-item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 12px; color: #374151; }
+        .confirm-item:last-child { border-bottom: none; }
+        .confirm-check { width: 18px; height: 18px; border: 2px solid #cbd5e1; border-radius: 4px; flex-shrink: 0; margin-top: 1px; }
+        .page-footer { position: absolute; bottom: 30px; left: 1.0in; right: 1.0in; display: flex; justify-content: space-between; font-size: 9px; color: #94a3b8; }
+    </style>
+</head>
+<body>
+
+    <!-- PAGE 1: COVER -->
+    <div class="page cover">
+        <div class="cover-logo">CHARLIE AI</div>
+        <h1>Implementation Plan<br>for <span>Geobreeze Travel</span></h1>
+        <div class="cover-subtitle">Your personalized AI setter deployment — built around your funnel, your audience, and your growth goals.</div>
+        <div class="cover-meta">
+            <strong>Prepared:</strong> March 11, 2026
+        </div>
+        <div class="cover-bar"></div>
+    </div>
+
+    <!-- PAGE 2: YOUR BUSINESS AT A GLANCE -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Implementation Plan</div>
+            </div>
+
+            <h2>Your Business at a <span>Glance</span></h2>
+            <div class="section-subtitle">Here's what we captured from our conversation — please confirm everything looks right.</div>
+
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-label">Business</div>
+                    <div class="info-value">Geobreeze Travel</div>
+                    <div class="info-value-sm">geobreezetravel.com</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Point of Contact</div>
+                    <div class="info-value">Julia Menez</div>
+                    <div class="info-value-sm">Founder &amp; face of the brand. Based in Las Vegas. Former actuary with 9 years developing risk mitigation strategies.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Industry</div>
+                    <div class="info-value">Points &amp; Miles Consulting</div>
+                    <div class="info-value-sm">Helping business owners maximize points they already have and earn more through ad spend and business expenses. US-based clients only.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Offer Tiers</div>
+                    <div class="info-value">1:1 Coaching · Points Accelerator · Free Resources</div>
+                    <div class="info-value-sm">1:1 coaching for $100K+/year spenders ($30-60K savings in 6 months). Points Accelerator: course + community + weekly group coaching. Free: credit card consults, award search videos, newsletter.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Primary Inbound Channel</div>
+                    <div class="info-value">Instagram (Organic + Paid)</div>
+                    <div class="info-value-sm">Large Instagram following. Keyword comments on posts → ManyChat sends freebie link → VA follows up. Also: YouTube, ads, lead magnets, free newsletter with weekly personalized award search video.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Engagement Volume</div>
+                    <div class="info-value">200–500 Comments/Post (Daily)</div>
+                    <div class="info-value-sm">Some posts get a couple dozen, some get a couple thousand. Unknown overlap of repeat commenters. A few hundred leads/month actually make it into GHL with email and phone.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">CRM</div>
+                    <div class="info-value">GoHighLevel</div>
+                    <div class="info-value-sm">A2P likely active (currently texting with delivery). ManyChat for Instagram keyword triggers and new follower outbound.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Key Metrics</div>
+                    <div class="info-value">80%+ Show Rate · High 20s/Low 30s Close</div>
+                    <div class="info-value-sm">Show rate is strong — not the bottleneck. Close rate in the high 20s to low 30s. The constraint is converting commenters into booked calls.</div>
+                </div>
+                <div class="info-card full-width">
+                    <div class="info-label">Current Team &amp; Setup</div>
+                    <div class="info-value-sm">VA handles Instagram DM follow-ups — working through a backlog of comments, sending freebie links, and following up with "did you watch the video?" messages. Some posts generate thousands of comments that the VA can't keep up with. Setters and closers handle qualified leads. GHL has automations and an Excel-based qualification calculator (points balance, type, card spend). Disqualified leads route to setter calendar automatically; qualified leads go straight to closers.</div>
+                </div>
+                <div class="info-card full-width">
+                    <div class="info-label">Target Audience</div>
+                    <div class="info-value-sm">US-based business owners and high-income earners who have significant points and miles but don't know how to maximize them. High-educated, financially savvy demographic. Non-US leads are disqualified and redirected to free YouTube content.</div>
+                </div>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Geobreeze Travel</span>
+        </div>
+    </div>
+
+    <!-- PAGE 3: WHAT WE HEARD -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Discovery Summary</div>
+            </div>
+
+            <h2>What We <span>Heard</span></h2>
+            <div class="section-subtitle">The key challenges and opportunities you shared with us</div>
+
+            <div class="detail-card">
+                <h3>📉 The Comment-to-Contact Bottleneck</h3>
+                <p>This is your #1 constraint. You're generating hundreds of comments per post — people actively raising their hand for freebies and resources. ManyChat sends them the link, but there's a massive drop-off between commenting and actually clicking/downloading/giving contact info. Your VA follows up manually, but she's working through a constant backlog and can't keep pace with the volume. Charlie responds in under 60 seconds, follows up persistently, and has natural conversations that move people from "send me the video" to "here's my email, book me on a call" — without it feeling like a form fill.</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>🤖 VA Can't Scale with Your Content Volume</h3>
+                <p>You post daily, and some posts generate couple thousand comments. Your VA is working through a backlog that keeps growing. The follow-up work — "did you watch the video? need any help? want a call?" — is low-value for a human but critical for conversion. Charlie handles this at infinite scale, following up on every single commenter with personalized, conversational messages that feel like Julia's team reaching out — not an automated sequence.</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>✅ Show Rate Is Already Strong — 80%+</h3>
+                <p>Once someone books a call, they show up. This tells us your audience is highly motivated and your pre-call process works well. The opportunity isn't getting more people to show up — it's getting more people booked in the first place. That said, a show rate agent is available and free when you're ready. As volume increases from Charlie converting more commenters, maintaining that 80%+ becomes more important.</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>📊 High 20s/Low 30s Close Rate — Reactivation Opportunity</h3>
+                <p>A 25-30% close rate means 70% of people who get on a call don't close. Charlie captures their goals and pain points during the initial conversation and pushes them to GHL as custom fields. When a closer moves a deal to dead, Charlie can follow up 60 days later with full context: "Last time we spoke, you were looking to hit a million points — how's that coming along?" This contextual reactivation consistently outperforms generic spray-and-pray outreach.</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>🏷️ "Bad Fit" Leads Are Future Revenue</h3>
+                <p>You mentioned tagging leads as "bad fit" for 1:1 or group coaching — but wanting to reactivate them later when you launch a low-ticket course or new offer. Charlie stores all conversation context and can reach back out to those tagged leads when you're ready, with a tailored message about the new offer. No lead is wasted.</p>
+            </div>
+
+            <div class="client-quote">
+                <p>The bottleneck is the booking rate. We have so many people who are engaging with the Instagram content. But as soon as they're like, oh, I got to give my phone number, I'm not doing it.</p>
+                <p class="quote-attr">— Julia Menez, Discovery Call</p>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Geobreeze Travel</span>
+        </div>
+    </div>
+
+    <!-- PAGE 4: YOUR AI SETTERS — PHASE 1 -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Your AI Setters</div>
+            </div>
+
+            <h2>What We're <span>Building</span> for You</h2>
+            <div class="section-subtitle">Specialized AI agents deployed in phases — starting with your biggest bottleneck</div>
+
+            <p class="intro-text" style="margin-bottom: 18px; font-weight: 600; color: #0a0a1a; font-size: 15px;">Phase 1 — Weeks 1–2: Solve the Bottleneck</p>
+            <p class="intro-text" style="margin-top: 0;">Charlie takes over Instagram DM engagement — converting commenters into booked calls at a pace your VA can't match.</p>
+
+            <div class="setter-card">
+                <h3>💬 Instagram DM Setter</h3>
+                <p>Your primary agent. When someone comments a keyword on any post, Charlie picks up the conversation in the DM — no ManyChat needed for comments. Sends the requested resource, then follows up: "Did you get a chance to check out the video? Anything jump out?" Uses gap selling to surface their goal (e.g., "What are you hoping to accomplish with your points?"), uncovers the hurdle ("What's been stopping you from maximizing them?"), qualifies conversationally, and books qualified leads directly with your closers. Disqualified leads route to the setter calendar via your existing GHL automation. Non-US leads get a friendly redirect to YouTube. Charlie follows up persistently — until they book or tell us to stop. Note: ManyChat is still needed for new follower outbound only, since Charlie can't natively initiate outreach to new followers.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">Instagram DM</span>
+                    <span class="setter-tag">60-Second Response</span>
+                    <span class="setter-tag">Gap Selling</span>
+                    <span class="setter-tag">Goal &amp; Pain Capture</span>
+                    <span class="setter-tag">GHL Custom Fields</span>
+                    <span class="setter-tag">Conversational Qualification</span>
+                    <span class="setter-tag">Closer Booking</span>
+                    <span class="setter-tag">Persistent Follow-up</span>
+                </div>
+            </div>
+
+            <div class="setter-card">
+                <h3>🔄 Contextual Reactivation Agent</h3>
+                <p>Targets leads that made it to a closer call but didn't close — with full context. When a closer moves a deal to dead, Charlie waits 60 days and follows up referencing their original goal and hurdle: "Hey Julia, last time we spoke you were looking to hit a million points but couldn't figure out the right card strategy. How's that coming along?" Also handles leads where Charlie captured goals during the initial DM conversation but they never booked. This context-driven approach consistently outperforms generic reactivation because every touchpoint feels personal and relevant.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">Context-Aware Outreach</span>
+                    <span class="setter-tag">60-Day Delay</span>
+                    <span class="setter-tag">Goal &amp; Hurdle Reference</span>
+                    <span class="setter-tag">Dead Deal Recovery</span>
+                    <span class="setter-tag">SMS via GHL</span>
+                    <span class="setter-tag">Persistent Follow-up</span>
+                </div>
+            </div>
+
+            <p class="intro-text" style="margin-bottom: 18px; margin-top: 24px; font-weight: 600; color: #0a0a1a; font-size: 15px;">Phase 2 — Weeks 2–4: Optimize &amp; Expand</p>
+            <p class="intro-text" style="margin-top: 0;">Once Phase 1 is converting, we add agents to protect your show rate at higher volume and recover lost deals.</p>
+
+            <div class="setter-card">
+                <h3>📈 Show Rate Agent</h3>
+                <p>Your show rate is already 80%+, but as Charlie drives more bookings, maintaining that number becomes critical. Five minutes after a booking, Charlie texts from the closer's number: "Hey, it's [closer name] — looking forward to our call. Just a heads up, we don't allow our schedule to stay open." Confirms the prospect has reviewed any pre-call materials and is prepped. Keeps your strong show rate intact even as volume scales.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">Texts as the Closer</span>
+                    <span class="setter-tag">5 Min After Booking</span>
+                    <span class="setter-tag">Expectation Setting</span>
+                    <span class="setter-tag">Pre-Call Prep</span>
+                    <span class="setter-tag">Maintain 80%+ Show Rate</span>
+                </div>
+            </div>
+
+            <div class="setter-card">
+                <h3>🚫 No-Show &amp; Cancellation Rebooking Agent</h3>
+                <p>Even at 80%+ show rate, that remaining 20% represents real revenue. When someone no-shows or cancels, Charlie follows up within minutes — friendly, non-judgmental, with an easy path to rebook. No guilt, just "life happens, let's get you back on the calendar."</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">No-Show Detection</span>
+                    <span class="setter-tag">Cancellation Recovery</span>
+                    <span class="setter-tag">Immediate Follow-up</span>
+                    <span class="setter-tag">Easy Rebooking</span>
+                </div>
+            </div>
+
+            <div class="setter-card">
+                <h3>🤝 Post-Call Written Closer</h3>
+                <p>For prospects who had a good call but didn't close — your closer moves them to a follow-up stage and Charlie picks them up. Impersonates the closer, follows up with relevant context, and nudges them toward closing. These are warm leads who just needed more time or another touch.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">Warm Lead Recovery</span>
+                    <span class="setter-tag">Closer Impersonation</span>
+                    <span class="setter-tag">Pipeline Stage Trigger</span>
+                    <span class="setter-tag">Persistent Follow-up</span>
+                </div>
+            </div>
+
+            <div class="callout-box">
+                <h3>🔮 Future: Low-Ticket Reactivation</h3>
+                <p>When you launch a low-ticket course or new offer, Charlie can reach back out to every "bad fit" lead that was tagged and saved — with a tailored message about the new product. No additional setup needed — just spin up a new agent, point it at the tagged segment, and go.</p>
+            </div>
+
+            <div class="metrics-grid" style="margin-top: 16px;">
+                <div class="metric-card">
+                    <div class="metric-number">200-500</div>
+                    <div class="metric-label">Comments per post<br>converted by Charlie</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number">80%+</div>
+                    <div class="metric-label">Show rate<br>maintained at scale</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number">&lt;60s</div>
+                    <div class="metric-label">Response time<br>on every DM</div>
+                </div>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Geobreeze Travel</span>
+        </div>
+    </div>
+
+    <!-- PAGE 5: CONFIGURATION DETAILS -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Configuration Details</div>
+            </div>
+
+            <h2>How We'll <span>Configure</span> Charlie</h2>
+            <div class="section-subtitle">Technical and brand setup details — please confirm or correct anything that needs updating</div>
+
+            <div class="config-card">
+                <h3>🎨 Brand Voice &amp; Persona</h3>
+                <ul>
+                    <li><strong>Persona:</strong> Charlie shows up as Julia's assistant — knowledgeable, helpful, and approachable. Ideally mirrors Julia's voice and personality since she's the face of the brand.</li>
+                    <li><strong>Tone:</strong> Friendly, knowledgeable, travel-enthusiast energy — matches the excitement your audience feels about points and miles</li>
+                    <li><strong>Custom persona (optional):</strong> Provide video content of Julia and we'll build a persona that mirrors her communication style</li>
+                    <li><strong>Key behavior:</strong> Charlie should NOT over-educate — if asked about strategy or methodology, redirect to the call: "Great question — that's exactly what we'd cover on a call with our team." Keep them curious, not satisfied.</li>
+                </ul>
+            </div>
+
+            <div class="config-card">
+                <h3>⚙️ Technical Integration</h3>
+                <ul>
+                    <li><strong>CRM:</strong> GoHighLevel — deal stages updated automatically. Charlie moves qualified leads to "Booked," dead leads to reactivation pipeline.</li>
+                    <li><strong>Instagram DM:</strong> Charlie handles all comment-triggered DMs natively. Replaces ManyChat for comments.</li>
+                    <li><strong>ManyChat:</strong> Keep for new follower outbound ONLY — Charlie can't natively outbound to new followers. ManyChat triggers the intro, Charlie takes over the conversation.</li>
+                    <li><strong>SMS via GHL:</strong> For reactivation and show rate agents. A2P likely active (verify on kickoff).</li>
+                    <li><strong>Calendar:</strong> Booking via calendar link or conversational booking — we'll A/B test both to see which converts better for your audience.</li>
+                    <li><strong>Qualification:</strong> Conversational qualification by Charlie, with GHL automations routing disqualified leads to setter calendar and qualified leads to closers.</li>
+                    <li><strong>Time-bound messaging:</strong> Charlie configured to respect business hours for outbound — no 2 AM texts to US leads from overnight ad responses.</li>
+                </ul>
+            </div>
+
+            <div class="config-card">
+                <h3>🧠 Knowledge Base (What We'll Feed Charlie)</h3>
+                <ul>
+                    <li>geobreezetravel.com — program details, offer tiers, positioning</li>
+                    <li>Julia's bio and background — actuary, points expertise, credibility markers</li>
+                    <li>Lead magnet details — what each freebie covers (credit card consults, award search videos, newsletter) so Charlie can reference them naturally</li>
+                    <li>Qualification criteria — your calculator variables (points balance, type, card spend) translated into conversational questions</li>
+                    <li>Disqualification criteria — non-US leads, financial thresholds, bad fit indicators</li>
+                    <li>Common objections and FAQ — what prospects push back on</li>
+                    <li>Example conversations that converted well — so Charlie learns from what's working</li>
+                </ul>
+            </div>
+
+            <div class="config-card">
+                <h3>📊 Data Flow &amp; Custom Fields</h3>
+                <ul>
+                    <li><strong>Goal capture:</strong> When Charlie surfaces a prospect's goal ("I want to fly business class to Tokyo on points"), it's pushed to a GHL custom field</li>
+                    <li><strong>Hurdle capture:</strong> When Charlie uncovers the blocker ("I have 500K points but don't know how to use them for international flights"), pushed to a separate field</li>
+                    <li><strong>Why this matters:</strong> Every downstream agent — reactivation, post-call follow-up, low-ticket reactivation — references these fields for personalized outreach</li>
+                    <li><strong>"Bad fit" tagging:</strong> Disqualified leads tagged and stored for future low-ticket reactivation when you're ready</li>
+                </ul>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Geobreeze Travel</span>
+        </div>
+    </div>
+
+    <!-- PAGE 6: IMPLEMENTATION ROADMAP -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Implementation Roadmap</div>
+            </div>
+
+            <h2>Your <span>Roadmap</span></h2>
+            <div class="section-subtitle">From kickoff to fully operational — typically live within 5 days</div>
+
+            <div class="phase-card">
+                <div class="phase-label">Phase 1 — Week 1: Build &amp; Launch</div>
+                <h3>Instagram DM Setter + Reactivation Agent</h3>
+                <ul>
+                    <li><strong>Monday: Kickoff call (1 hour)</strong> — Build the Instagram DM setter together. Load knowledge base, set Julia's persona and voice, define qualification criteria and disqualification rules (US-only, financial thresholds), connect GHL integrations.</li>
+                    <li><strong>Tuesday–Wednesday: Sparring</strong> — Roleplay as prospects in the DM playground. Test keyword triggers, freebie follow-ups, qualification conversations, edge cases (non-US leads, "bad fit" routing). Give real-time feedback until Charlie is a 10/10.</li>
+                    <li><strong>Thursday: Reactivation agent build</strong> — Configure the contextual reactivation agent for dead deals with goal/hurdle reference.</li>
+                    <li><strong>Friday: Integration testing &amp; launch</strong> — Test GHL triggers, calendar booking (A/B test link vs conversational), custom field pushes, ManyChat handoff for new followers. Deploy.</li>
+                    <li>Your VA handles the existing backlog of comments. Charlie takes over all new comments going forward.</li>
+                </ul>
+            </div>
+
+            <div class="phase-card">
+                <div class="phase-label">Phase 2 — Weeks 2–4: Optimize &amp; Expand</div>
+                <h3>Show Rate + Recovery Agents</h3>
+                <ul>
+                    <li><strong>Launch Show Rate Agent</strong> — Protect your 80%+ show rate as booking volume increases</li>
+                    <li><strong>Launch No-Show/Cancellation Rebooking</strong> — Recover the 20% who don't show</li>
+                    <li><strong>Launch Post-Call Written Closer</strong> — Follow up warm leads that didn't close on the first call</li>
+                    <li>Monitor A/B test results: calendar link vs conversational booking — double down on the winner</li>
+                    <li>Ongoing: 10 minutes/day reviewing conversations, giving feedback, optimizing</li>
+                </ul>
+            </div>
+
+            <div class="phase-card">
+                <div class="phase-label">Future: New Offers &amp; Initiatives</div>
+                <h3>Spin Up New Agents as Needed</h3>
+                <ul>
+                    <li>Testing a new initiative (e.g., free live training → closer funnel)? Spin up a dedicated agent — each agent is an individual salesperson with its own persona and directives</li>
+                    <li>Launching a low-ticket course? Activate the "bad fit" tagged leads with a tailored reactivation agent</li>
+                    <li>Evergreen webinar? Dedicated opt-in → didn't watch and watched → didn't book agents</li>
+                    <li>5 fully managed agents included. Unlimited self-managed after that. By your 4th or 5th agent, you'll know the drill.</li>
+                </ul>
+            </div>
+
+            <div class="callout-box">
+                <h3>⚠️ One Rule</h3>
+                <p>Once an agent is performing — don't touch it. The biggest issue we see is clients making changes to a working agent and cutting their numbers in half. Work with us to optimize; once it's dialed in, let it run.</p>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Geobreeze Travel</span>
+        </div>
+    </div>
+
+    <!-- PAGE 7: CONFIRM & NEXT STEPS -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Confirm &amp; Next Steps</div>
+            </div>
+
+            <h2>Please <span>Confirm</span></h2>
+            <div class="section-subtitle">Review the items below so we're fully aligned before kickoff</div>
+
+            <div class="config-card">
+                <h3>📋 Items to Confirm</h3>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Calendar tool</strong> — Which calendar/booking system should Charlie connect to? (Calendly, GHL calendar, other)</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Qualification criteria</strong> — What are the key variables from your calculator that Charlie should qualify on conversationally? (Points balance, type, annual spend, etc.)</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Disqualification rules</strong> — Beyond non-US leads, what else should Charlie filter out? (Minimum spend threshold, specific situations)</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>A2P verification</strong> — Please confirm your Twilio/GHL SMS is delivering reliably. If unsure, we'll verify together on kickoff.</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Setter script or example conversations</strong> — Do you have a script your VA uses or example DM conversations that converted well? Share whatever you have.</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Lead magnet inventory</strong> — Full list of freebies (videos, guides, consults) so Charlie knows what to reference and send in DMs</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>ManyChat handoff</strong> — Confirm your ManyChat setup for new follower outbound so we can configure the Charlie handoff point</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Business hours</strong> — What hours should Charlie be active for outbound messaging? (Inbound DM replies can be 24/7, but outbound texts should respect your audience's timezone.)</div></div>
+            </div>
+
+            <div class="callout-box" style="margin-top: 20px;">
+                <h3>📝 How to Confirm</h3>
+                <p>Simply reply to the email this was shared in with your answers, corrections, or questions. We'll incorporate everything into your kickoff call so we can hit the ground running. No detail is too small — the more we know upfront, the faster Charlie becomes a 10/10.</p>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Geobreeze Travel</span>
+        </div>
+    </div>
+
+    <!-- PAGE 8: NEXT STEPS CTA -->
+    <div class="page" style="background: linear-gradient(135deg, #050507 0%, #0a0a1a 40%, #0d1528 100%); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2in 1.2in; margin: 0 auto;">
+        <div class="cover-logo" style="margin-bottom: 50px;">CHARLIE AI</div>
+        <h2 style="color: white; font-size: 36px; margin-bottom: 16px;">Let's get<br>you started.</h2>
+        <p style="color: #94a3b8; font-size: 15px; max-width: 450px; margin-bottom: 40px;">If everything above looks good, the next step is booking your kickoff call. We'll configure Charlie together and have your first agents live within days.</p>
+        <a href="https://calendly.com/drew-charlie/30min" style="display: inline-block; background: white; color: #0a0a1a; font-size: 15px; font-weight: 700; padding: 14px 40px; border-radius: 50px; text-decoration: none;">Book Your Kickoff Call →</a>
+        <div style="margin-top: 50px;">
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 6px;"><a href="https://charlieai.io" style="color: #834CD2; text-decoration: none;">charlieai.io</a> · <a href="mailto:drew@systemsbyai.com" style="color: #834CD2; text-decoration: none;">drew@systemsbyai.com</a></p>
+        </div>
+        <div class="cover-bar"></div>
+    </div>
+
+</body>
+</html>
