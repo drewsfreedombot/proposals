@@ -16,7 +16,7 @@
             font-family: 'Inter', -apple-system, sans-serif;
             color: #1a1a2e;
             line-height: 1.6;
-            background: white;
+            background: #f1f5f9;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
         }
@@ -27,9 +27,12 @@
             page-break-after: always;
             position: relative;
             overflow: hidden;
+            margin: 0 auto;
+            background: white;
         }
         .page:last-child { page-break-after: auto; }
         @media print {
+            body { background: white; }
             .page {
                 page-break-after: always !important;
                 page-break-inside: avoid !important;
@@ -38,7 +41,7 @@
             }
             .page:last-child { page-break-after: auto !important; }
             h2, h3, .section-subtitle { break-after: avoid; page-break-after: avoid; orphans: 3; widows: 3; }
-            .info-card, .detail-card, .phase-card, .setter-card { break-inside: avoid; page-break-inside: avoid; }
+            .info-card, .detail-card, .phase-card, .setter-card, .config-card { break-inside: avoid; page-break-inside: avoid; }
         }
         .cover {
             background: linear-gradient(135deg, #050507 0%, #0a0a1a 40%, #0d1528 100%);
@@ -259,6 +262,34 @@
         }
         .callout-box h3 { font-size: 13px; color: #0c4a6e; margin-bottom: 4px; }
         .callout-box p { font-size: 11.5px; color: #0e4f6e; margin-bottom: 0; line-height: 1.6; }
+        .config-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 18px 22px;
+            margin-bottom: 14px;
+        }
+        .config-card h3 { font-size: 14px; margin-bottom: 6px; }
+        .config-card p { font-size: 12px; color: #475569; margin-bottom: 0; line-height: 1.6; }
+        .config-card ul { margin: 6px 0 0 16px; padding: 0; }
+        .config-card ul li { font-size: 12px; color: #475569; margin-bottom: 4px; line-height: 1.5; }
+        .confirm-item {
+            display: flex;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 12px;
+            color: #374151;
+        }
+        .confirm-item:last-child { border-bottom: none; }
+        .confirm-check {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #cbd5e1;
+            border-radius: 4px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
         .page-footer {
             position: absolute;
             bottom: 30px;
@@ -299,55 +330,51 @@
                 <div class="info-card">
                     <div class="info-label">Business</div>
                     <div class="info-value">Freelancer to CEO</div>
-                    <div class="info-value-sm">suzycrawford.com</div>
+                    <div class="info-value-sm">suzycrawford.com · go.suzycrawford.com</div>
                 </div>
                 <div class="info-card">
                     <div class="info-label">Point of Contact</div>
                     <div class="info-value">Chloe &amp; Lauren</div>
+                    <div class="info-value-sm">Day-to-day operations. Founder: Suzy Crawford (ex-Google marketing exec, 15+ years in marketing &amp; advertising)</div>
                 </div>
                 <div class="info-card">
                     <div class="info-label">Industry</div>
                     <div class="info-value">High-Ticket Coaching</div>
-                    <div class="info-value-sm">Helping freelancers &amp; agency owners scale to $20K+/month with premium retainers and AI systems</div>
+                    <div class="info-value-sm">Helping marketing freelancers &amp; agency owners scale to $20K+/month with premium retainers, AI systems, and community</div>
                 </div>
                 <div class="info-card">
                     <div class="info-label">Offer</div>
                     <div class="info-value">Premium Coaching Program</div>
-                    <div class="info-value-sm">Strategy calls booked via funnel → closers handle the call</div>
+                    <div class="info-value-sm">Strategy calls booked via Instagram funnel → closers handle the call. 200+ success stories. Satisfaction guarantee.</div>
                 </div>
                 <div class="info-card">
                     <div class="info-label">Primary Inbound Channel</div>
                     <div class="info-value">Instagram (Paid Ads)</div>
-                    <div class="info-value-sm">All inbound flows through Instagram DMs — keyword triggers, CTAs, opt-ins, new followers</div>
+                    <div class="info-value-sm">All inbound flows through Instagram DMs — keyword triggers (e.g. "DM me the word coach"), CTAs, opt-ins, new followers</div>
                 </div>
                 <div class="info-card">
                     <div class="info-label">Database Size</div>
                     <div class="info-value">~20,000+ Leads</div>
-                    <div class="info-value-sm">Existing leads in GoHighLevel ready for reactivation</div>
+                    <div class="info-value-sm">Existing leads in GoHighLevel that have not been reactivated — significant untapped revenue</div>
                 </div>
                 <div class="info-card">
                     <div class="info-label">CRM</div>
                     <div class="info-value">GoHighLevel</div>
-                    <div class="info-value-sm">Twilio A2P registered for SMS deliverability</div>
+                    <div class="info-value-sm">Twilio A2P registered ✓ (critical for SMS deliverability — already in place). Also use Sales Kick.</div>
                 </div>
                 <div class="info-card">
                     <div class="info-label">Outreach Channels</div>
-                    <div class="info-value">SMS · WhatsApp · IG DM</div>
-                    <div class="info-value-sm">US leads → SMS (Twilio) · UK leads → WhatsApp · All inbound → Instagram DM</div>
+                    <div class="info-value">SMS · WhatsApp · IG DM · Email</div>
+                    <div class="info-value-sm">US leads → SMS via Twilio · UK leads → WhatsApp · All inbound → Instagram DM · Email for nurture sequences</div>
                 </div>
                 <div class="info-card full-width">
-                    <div class="info-label">Current Setup</div>
-                    <div class="info-value-sm">Two human setters (one UK-based, one US-based) handling inbound leads. Strong pre-call nurture sequence already in place — homework warm-up, walkthrough video, email sequence with objection handling, authority building, and storytelling. Current show rate sits at approximately 70%.</div>
+                    <div class="info-label">Current Team &amp; Setup</div>
+                    <div class="info-value-sm">Two human setters — one UK-based, one US-based — handling all inbound leads. Setters manage the bulk of daily work but don't have bandwidth to also work through the 20K+ lead reactivation database. Team was in the process of hiring additional setters before exploring Charlie. Strong pre-call nurture sequence already in place: homework warm-up, pre-call walkthrough video, and a full email sequence covering objection handling, authority building, and storytelling content.</div>
                 </div>
                 <div class="info-card full-width">
-                    <div class="info-label">Audience</div>
-                    <div class="info-value-sm">Primarily female marketing freelancers and agency owners. Communication style should be warm, personal, and empowering — emotion-led, not hard-sell. Brand voice is supportive mentor energy, aligned with Suzy's ex-Google exec credibility and the Freelancer to CEO community.</div>
+                    <div class="info-label">Target Audience &amp; Brand Voice</div>
+                    <div class="info-value-sm">Primarily female marketing freelancers and agency owners. Communication must be warm, personal, and empowering — emotion-led, not hard-sell. The tone should match what attracted leads to the brand: supportive mentor energy aligned with Suzy's credibility and the Freelancer to CEO community. Congruency from ad copy through to setting is essential — leads should feel the same brand voice at every touchpoint.</div>
                 </div>
-            </div>
-
-            <div class="callout-box">
-                <h3>📝 Please Review</h3>
-                <p>If anything above doesn't look right, let us know before kickoff so we can make corrections. Getting these details right ensures Charlie sounds like a natural extension of your brand from day one.</p>
             </div>
         </div>
         <div class="page-footer">
@@ -369,31 +396,36 @@
 
             <div class="detail-card">
                 <h3>⚡ Speed &amp; Consistency</h3>
-                <p>Your two setters are doing great work, but there aren't enough hours in the day. Inbound leads need immediate responses — and with a growing pipeline, your team is stretched between handling new leads and working through the existing database. Charlie responds in under 60 seconds, 24/7, and never misses a follow-up.</p>
+                <p>Your two setters are doing great work, but there aren't enough hours in the day. With a growing pipeline, your team is stretched between handling new inbound leads and working through the existing database. You were in the process of hiring additional setters to keep up with demand. Charlie responds in under 60 seconds, 24/7, across every channel — and never misses a follow-up. Research shows you're 6x more likely to convert a lead when you're the first to respond, and most bookings happen within 5 minutes of surfacing the prospect's pain point. Speed to reply is just as critical as speed to lead.</p>
             </div>
 
             <div class="detail-card">
-                <h3>🔄 20,000+ Untouched Leads</h3>
-                <p>You have approximately 20,000 leads sitting in GoHighLevel that need reactivation. Your setters don't have the bandwidth to work through them while also handling daily inbound. This is a massive revenue opportunity — and exactly where Charlie delivers the fastest ROI.</p>
+                <h3>🔄 20,000+ Leads Ready for Reactivation</h3>
+                <p>You have approximately 20,000 leads sitting in GoHighLevel that haven't been re-engaged. These are people who already raised their hand and showed interest in your program — they've already been acquired. Your setters don't have the bandwidth to work through this database while also managing daily inbound. A single reactivation campaign targeting these leads is typically where Charlie delivers the fastest and most significant ROI.</p>
             </div>
 
             <div class="detail-card">
                 <h3>👩 Your Audience Requires a Specific Touch</h3>
-                <p>Your community is female freelancers and agency owners. The tone needs to be warm, personal, and empowering — emotion-led conversations that match what attracted them to your brand in the first place. Charlie will be configured to match your brand voice, and we can create a custom persona modeled after Suzy using video transcripts.</p>
+                <p>Your community is exclusively female freelancers and agency owners. The way you speak to your leads matters deeply — it's personal, emotional, and empowering. Charlie will be configured to match this voice precisely. We also have the option to create a custom persona modeled directly after Suzy using 5 video transcripts — so Charlie's language, tone, and personality mirror the brand your audience already trusts.</p>
             </div>
 
             <div class="detail-card">
-                <h3>📊 Strong Foundation to Build On</h3>
-                <p>Your ~70% show rate tells us your pre-call nurture is already working well. We're not here to replace what's working — we're here to complement it. Charlie will layer in additional touchpoints (pre-call confirmation, no-show recovery) to push that number even higher.</p>
+                <h3>📊 Strong Foundation — 70% Show Rate</h3>
+                <p>Your show rate of approximately 70% is well above industry average, thanks to the pre-call nurture sequence you've already invested in. We're not here to replace what's working — we're here to complement it. Charlie adds pre-call confirmation, homework and VSL verification, and expectation-setting touches that layer on top of your existing process. Clients typically see an additional 10–20% lift in show rate from these added touchpoints alone.</p>
             </div>
 
             <div class="detail-card">
-                <h3>🤖 Previous AI Experience</h3>
-                <p>We understand you've had a negative experience with AI in the past. That's exactly why Charlie is built differently — with three independent AI judges that review every single response before it's sent. One checks for conversational congruency, one checks alignment with your training and feedback, and one ensures Charlie is at the right stage of the conversation. You'll have full control during the sparring phase to test, challenge, and tune Charlie until you're 100% confident.</p>
+                <h3>🤖 Previous AI Experience &amp; How Charlie Is Different</h3>
+                <p>We understand a previous AI solution didn't meet expectations. Charlie is built differently. Every single response Charlie generates passes through three independent AI judges before it reaches a prospect. Judge 1 checks conversational congruency — is Charlie making sense in context? Judge 2 checks alignment with your specific training and feedback. Judge 3 evaluates where the conversation is in the sales process — should Charlie dig deeper into pain, or move toward booking? This triple-filter system is why Charlie consistently performs at a level that feels human and brand-aligned. During setup, you'll spar directly with Charlie and provide real-time feedback that permanently shapes how he responds.</p>
             </div>
 
             <div class="client-quote">
-                <p>We've always wanted an AI setter because we know it would be fast, and we know it would be efficient of our time.</p>
+                <p>We've always wanted an AI setter because we know it would be fast, and we know it would be efficient of our time. But also we're really nervous.</p>
+                <p class="quote-attr">— Chloe, Discovery Call</p>
+            </div>
+
+            <div class="client-quote" style="margin-top: 12px;">
+                <p>We were about to hire loads more setters. This just gives us room to breathe for sure.</p>
                 <p class="quote-attr">— Chloe, Discovery Call</p>
             </div>
         </div>
@@ -403,7 +435,7 @@
         </div>
     </div>
 
-    <!-- PAGE 4: YOUR AI SETTERS -->
+    <!-- PAGE 4: YOUR AI SETTERS — PHASE 1 -->
     <div class="page">
         <div class="content">
             <div class="page-header">
@@ -412,66 +444,43 @@
             </div>
 
             <h2>What We're <span>Building</span> for You</h2>
-            <div class="section-subtitle">Five specialized AI agents deployed in two phases</div>
+            <div class="section-subtitle">Five specialized AI agents deployed in two phases — starting with what delivers value fastest</div>
 
-            <p class="intro-text" style="margin-bottom: 18px; font-weight: 600; color: #0a0a1a;">Phase 1 — Weeks 1–2: Quick Wins</p>
-            <p class="intro-text" style="margin-top: 0;">These agents complement your existing setup without disrupting anything. They work the opportunities your team doesn't have time for today.</p>
+            <p class="intro-text" style="margin-bottom: 18px; font-weight: 600; color: #0a0a1a; font-size: 15px;">Phase 1 — Weeks 1–2: Quick Wins</p>
+            <p class="intro-text" style="margin-top: 0;">These agents complement your existing setup without disrupting your current funnel or setter workflows. They target the opportunities your team doesn't have bandwidth for today — dormant leads, cancelled appointments, and no-shows.</p>
 
             <div class="setter-card">
                 <h3>🔄 Reactivation Agent</h3>
-                <p>Re-engages your ~20,000 dormant leads with personalized, gap-selling outreach. Follows up until they book or tell us to stop. US leads contacted via SMS, UK leads via WhatsApp. This is where Charlie typically delivers the fastest ROI — a single reactivation campaign can generate significant revenue from leads you've already paid to acquire.</p>
+                <p>Re-engages your ~20,000+ dormant leads with personalized, conversational outreach. Uses gap selling — following up around the prospect's stated goal, surfacing their pain points, and booking them when they're ready. Follows up persistently (up to 8–10 touches) until they book or tell us to stop. US leads contacted via SMS through your existing Twilio A2P setup, UK leads via WhatsApp. Multiple reactivation campaign templates available, including scholarship and exclusive offer plays tailored to coaching audiences.</p>
                 <div class="setter-detail">
-                    <span class="setter-tag">20K Lead Database</span>
-                    <span class="setter-tag">SMS (US)</span>
+                    <span class="setter-tag">20K+ Lead Database</span>
+                    <span class="setter-tag">SMS (US — Twilio)</span>
                     <span class="setter-tag">WhatsApp (UK)</span>
                     <span class="setter-tag">Gap Selling</span>
+                    <span class="setter-tag">Persistent Follow-up</span>
                     <span class="setter-tag">Calendar Booking</span>
                 </div>
             </div>
 
             <div class="setter-card">
                 <h3>🚫 Cancellation Rebooking Agent</h3>
-                <p>When a prospect cancels their strategy call, Charlie immediately reaches out to understand why and reschedule. Warm, empathetic approach — not pushy. Catches cancellations before they go cold and gets them back on the calendar.</p>
+                <p>When a prospect cancels their strategy call, Charlie reaches out immediately to understand why and offer a convenient alternative time. Warm, empathetic approach — acknowledges their situation, removes friction, and gets them rescheduled. Catches cancellations before they go cold and have time to lose momentum.</p>
                 <div class="setter-detail">
                     <span class="setter-tag">Cancellation Detection</span>
                     <span class="setter-tag">Empathetic Re-engagement</span>
+                    <span class="setter-tag">Barrier Removal</span>
                     <span class="setter-tag">Rescheduling</span>
                 </div>
             </div>
 
             <div class="setter-card">
                 <h3>📞 No-Show Rebooking Agent</h3>
-                <p>When someone doesn't show up for their call, Charlie follows up within minutes to rebook. No judgment — just a friendly check-in and a new time slot. Recovers revenue that would otherwise walk away.</p>
+                <p>When someone doesn't show up for their scheduled call, Charlie follows up within minutes with a friendly, non-judgmental check-in. No guilt — just a simple "life happens" message with an easy path to rebook. Recovers appointments that would otherwise be lost entirely. At your current volume, even recovering a handful of no-shows per week translates to meaningful additional revenue.</p>
                 <div class="setter-detail">
                     <span class="setter-tag">No-Show Detection</span>
-                    <span class="setter-tag">Quick Follow-up</span>
-                    <span class="setter-tag">Rebooking</span>
-                </div>
-            </div>
-
-            <p class="intro-text" style="margin-bottom: 18px; margin-top: 28px; font-weight: 600; color: #0a0a1a;">Phase 2 — Weeks 2–4: Scale Up</p>
-            <p class="intro-text" style="margin-top: 0;">Once you're confident in Charlie's quality from Phase 1, we expand into your live funnel.</p>
-
-            <div class="setter-card">
-                <h3>🎯 Top of Funnel Setter</h3>
-                <p>Handles your inbound Instagram DM leads in real time — responds in under 60 seconds, qualifies for intent and readiness, and books qualified prospects directly onto your strategy call calendar. Nurtures everyone else with value-first follow-up until they're ready. This is the agent that eventually gives your human setters room to breathe.</p>
-                <div class="setter-detail">
-                    <span class="setter-tag">Instagram DM</span>
-                    <span class="setter-tag">60-Second Response</span>
-                    <span class="setter-tag">Lead Qualification</span>
-                    <span class="setter-tag">Calendar Booking</span>
-                    <span class="setter-tag">Nurture Sequence</span>
-                </div>
-            </div>
-
-            <div class="setter-card">
-                <h3>📈 Show Rate Optimization Agent</h3>
-                <p>Reaches out after every booking to confirm the appointment, check that homework and the walkthrough video have been completed, and set expectations for the call. Layers on top of your existing pre-call nurture to push your already-strong 70% show rate even higher.</p>
-                <div class="setter-detail">
-                    <span class="setter-tag">Post-Booking Confirmation</span>
-                    <span class="setter-tag">Homework &amp; VSL Check</span>
-                    <span class="setter-tag">Expectation Setting</span>
-                    <span class="setter-tag">Show Rate Lift</span>
+                    <span class="setter-tag">Immediate Follow-up</span>
+                    <span class="setter-tag">Non-Judgmental Tone</span>
+                    <span class="setter-tag">Easy Rebooking</span>
                 </div>
             </div>
         </div>
@@ -481,50 +490,48 @@
         </div>
     </div>
 
-    <!-- PAGE 5: IMPLEMENTATION ROADMAP -->
+    <!-- PAGE 5: YOUR AI SETTERS — PHASE 2 -->
     <div class="page">
         <div class="content">
             <div class="page-header">
                 <div class="page-header-logo">CHARLIE AI</div>
-                <div class="page-header-title">Implementation Roadmap</div>
+                <div class="page-header-title">Your AI Setters (continued)</div>
             </div>
 
-            <h2>Your <span>Roadmap</span></h2>
-            <div class="section-subtitle">From kickoff to fully operational — at your pace</div>
+            <p class="intro-text" style="margin-bottom: 18px; font-weight: 600; color: #0a0a1a; font-size: 15px;">Phase 2 — Weeks 2–4: Scale Up</p>
+            <p class="intro-text" style="margin-top: 0;">Once you've seen Charlie perform in Phase 1 and you're confident in the quality, we expand into your live inbound funnel and add show rate optimization.</p>
 
-            <div class="phase-card">
-                <div class="phase-label">Phase 1 — Weeks 1–2</div>
-                <h3>Quick Wins: Reactivation + Recovery</h3>
-                <ul>
-                    <li><strong>Kickoff call</strong> — We configure Charlie together: brand voice, tone, qualification criteria, knowledge base</li>
-                    <li><strong>Sparring sessions</strong> — You roleplay as prospects, test Charlie's responses, and give feedback until you're fully confident</li>
-                    <li><strong>Custom persona option</strong> — Provide 5 videos of Suzy with transcripts and we'll build a persona that matches her voice exactly</li>
-                    <li><strong>Launch Reactivation Agent</strong> — Start working your 20,000+ lead database immediately</li>
-                    <li><strong>Launch Cancellation Rebooking Agent</strong> — Catch cancellations before they go cold</li>
-                    <li><strong>Launch No-Show Rebooking Agent</strong> — Recover missed appointments within minutes</li>
-                    <li>Your existing setters and funnel continue unchanged — Charlie adds to what's working</li>
-                </ul>
+            <div class="setter-card">
+                <h3>🎯 Top of Funnel Setter</h3>
+                <p>Handles your inbound Instagram DM leads in real time. When someone engages — whether through a keyword trigger, a CTA, an opt-in, or a new follow — Charlie responds within 60 seconds with a natural, on-brand conversation. Qualifies prospects for intent (are they actively looking to scale their freelance business or agency?), readiness, and fit. Qualified leads get booked directly onto your strategy call calendar. Everyone else enters a value-first nurture sequence, with Charlie following up until they're ready. This is the agent that gives your human setters room to breathe — and eventually lets you scale without adding headcount.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">Instagram DM</span>
+                    <span class="setter-tag">60-Second Response</span>
+                    <span class="setter-tag">Lead Qualification</span>
+                    <span class="setter-tag">Calendar Booking</span>
+                    <span class="setter-tag">Nurture Sequence</span>
+                    <span class="setter-tag">24/7 Coverage</span>
+                </div>
             </div>
 
-            <div class="phase-card">
-                <div class="phase-label">Phase 2 — Weeks 2–4</div>
-                <h3>Scale: Top of Funnel + Show Rate</h3>
-                <ul>
-                    <li><strong>Launch Top of Funnel Setter</strong> — Charlie starts handling inbound Instagram DM leads in real time</li>
-                    <li><strong>Launch Show Rate Optimization Agent</strong> — Post-booking confirmation, homework checks, expectation setting</li>
-                    <li>Compare Charlie's performance against your human setters side-by-side</li>
-                    <li>Gradually increase Charlie's share of inbound as confidence builds</li>
-                    <li>Your human setters can focus on higher-value activities — or you can scale back hiring plans</li>
-                    <li>Ongoing optimization: review conversations, refine scripts, A/B test approaches</li>
-                </ul>
+            <div class="setter-card">
+                <h3>📈 Show Rate Optimization Agent</h3>
+                <p>Reaches out shortly after every booking — as the closer — to confirm the appointment, verify the prospect has completed their homework and watched the walkthrough video, and set clear expectations for the call. Uses a direct, confident tone: "Just a heads up, we don't allow our schedule to stay open — if you need to reschedule, let us know now." This approach, layered on top of your existing pre-call nurture, typically drives a 10–20% lift in show rate. Your closers hop on the call knowing the prospect is prepped and ready.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">Post-Booking Confirmation</span>
+                    <span class="setter-tag">Homework &amp; VSL Check</span>
+                    <span class="setter-tag">Expectation Setting</span>
+                    <span class="setter-tag">Show Rate Lift</span>
+                    <span class="setter-tag">Closer Introduction</span>
+                </div>
             </div>
 
             <div class="callout-box">
-                <h3>🎯 Your Pace, Your Call</h3>
-                <p>You decide when Charlie is ready for each phase. During sparring, challenge Charlie with every objection, edge case, and curveball you can think of. We move to live leads only when you say Charlie is a 10 out of 10. The three-judge quality system ensures every response is reviewed before it's sent — so you can trust what goes out.</p>
+                <h3>🔮 Beyond Phase 2</h3>
+                <p>As your account matures, additional agents can be added for post-call follow-up, payment link nudges, NPS scoring, referral requests, onboarding sequences, and more. Charlie's library includes pre-built, fully optimized agent templates for each of these — ready to customize and deploy when you're ready to expand.</p>
             </div>
 
-            <div class="metrics-grid">
+            <div class="metrics-grid" style="margin-top: 24px;">
                 <div class="metric-card">
                     <div class="metric-number">20K+</div>
                     <div class="metric-label">Dormant leads<br>ready to reactivate</div>
@@ -545,14 +552,163 @@
         </div>
     </div>
 
-    <!-- PAGE 6: NEXT STEPS -->
-    <div class="page" style="background: linear-gradient(135deg, #050507 0%, #0a0a1a 40%, #0d1528 100%); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2in 1.2in;">
+    <!-- PAGE 6: CONFIGURATION & SETUP DETAILS -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Configuration Details</div>
+            </div>
+
+            <h2>How We'll <span>Configure</span> Charlie</h2>
+            <div class="section-subtitle">Technical and brand setup details — please confirm or correct anything that needs updating</div>
+
+            <div class="config-card">
+                <h3>🎨 Brand Voice &amp; Persona</h3>
+                <ul>
+                    <li><strong>Tone:</strong> Warm, empowering, personal, encouraging — supportive mentor energy</li>
+                    <li><strong>Language style:</strong> Feminine, emotion-led, conversational — NOT corporate or aggressive</li>
+                    <li><strong>Emoji usage:</strong> Optional and authentic to brand — confirm your preference on kickoff</li>
+                    <li><strong>Custom persona:</strong> Available — provide 5 videos of Suzy with transcripts and we'll create a persona that mirrors her voice, language patterns, and personality</li>
+                    <li><strong>Congruency goal:</strong> Charlie's language should match your Instagram ads, funnel copy, and VSL — so leads feel a seamless experience from first touchpoint to booked call</li>
+                </ul>
+            </div>
+
+            <div class="config-card">
+                <h3>⚙️ Technical Integration</h3>
+                <ul>
+                    <li><strong>CRM:</strong> GoHighLevel — deal stages updated automatically when Charlie books (moved to "Booked")</li>
+                    <li><strong>SMS (US leads):</strong> Twilio — A2P registration confirmed and active ✓</li>
+                    <li><strong>WhatsApp (UK leads):</strong> Connected through GHL for UK-based prospect outreach</li>
+                    <li><strong>Instagram DM:</strong> Connected for all inbound lead engagement</li>
+                    <li><strong>Calendar:</strong> Booking link integration — confirm calendar tool (Calendly / GHL calendar / other) on kickoff</li>
+                    <li><strong>Additional tools:</strong> Sales Kick integration — confirm requirements on kickoff</li>
+                </ul>
+            </div>
+
+            <div class="config-card">
+                <h3>🧠 Knowledge Base (What We'll Feed Charlie)</h3>
+                <ul>
+                    <li>suzycrawford.com / go.suzycrawford.com — full sales page content, program details, and positioning</li>
+                    <li>Suzy's bio and background — ex-Google marketing exec, 15+ years, 7 years leading strategy at Google, built own agency to six figures in under 6 months</li>
+                    <li>Program FAQ — pricing structure, what's included, delivery format</li>
+                    <li>Success stories and testimonials — 200+ documented success stories to reference naturally in conversations</li>
+                    <li>Qualification criteria — confirm ideal client profile on kickoff (current revenue level, business stage, services offered)</li>
+                    <li>Common objections — what prospects typically push back on, and how your team handles them today</li>
+                    <li>Pre-call walkthrough video content — so Charlie can reference and confirm completion</li>
+                </ul>
+            </div>
+
+            <div class="config-card">
+                <h3>📍 Geographic &amp; Timezone Routing</h3>
+                <ul>
+                    <li><strong>Your team:</strong> England, UK (GMT) — 5 hours ahead of EST</li>
+                    <li><strong>Your leads:</strong> Mix of US and UK — Charlie handles both 24/7 regardless of timezone</li>
+                    <li><strong>US leads:</strong> Contacted via SMS (Twilio)</li>
+                    <li><strong>UK leads:</strong> Contacted via WhatsApp</li>
+                    <li><strong>Scheduling:</strong> Kickoff calls and check-ins scheduled for morning NA / afternoon UK time</li>
+                </ul>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Suzy Crawford Coaching</span>
+        </div>
+    </div>
+
+    <!-- PAGE 7: IMPLEMENTATION ROADMAP -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Implementation Roadmap</div>
+            </div>
+
+            <h2>Your <span>Roadmap</span></h2>
+            <div class="section-subtitle">From kickoff to fully operational — at your pace</div>
+
+            <div class="phase-card">
+                <div class="phase-label">Phase 1 — Weeks 1–2: Quick Wins</div>
+                <h3>Build, Spar, and Launch Recovery Agents</h3>
+                <ul>
+                    <li><strong>Kickoff call (1 hour)</strong> — Configure Charlie together: load knowledge base, set brand voice and tone, define qualification criteria, connect integrations</li>
+                    <li><strong>Sparring sessions</strong> — Roleplay as prospects, fire objections, test edge cases. Give real-time feedback: positive (Charlie does more of it) and constructive (Charlie never does it again). You control the pace — Charlie goes live when you say he's a 10/10</li>
+                    <li><strong>Custom Suzy persona (optional)</strong> — Provide 5 videos with transcripts and we build a persona that sounds like Suzy</li>
+                    <li><strong>Launch Reactivation Agent</strong> — Start working the 20,000+ lead database with proven campaign templates</li>
+                    <li><strong>Launch Cancellation Rebooking Agent</strong> — Catch cancellations and rebook immediately</li>
+                    <li><strong>Launch No-Show Rebooking Agent</strong> — Recover missed appointments within minutes</li>
+                    <li>Your existing setters and pre-call nurture sequence continue unchanged — Charlie adds to what's already working</li>
+                </ul>
+            </div>
+
+            <div class="phase-card">
+                <div class="phase-label">Phase 2 — Weeks 2–4: Scale Up</div>
+                <h3>Go Live on Inbound + Optimize Show Rate</h3>
+                <ul>
+                    <li><strong>Launch Top of Funnel Setter</strong> — Charlie handles inbound Instagram DM leads in real time, qualifying and booking 24/7</li>
+                    <li><strong>Launch Show Rate Optimization Agent</strong> — Post-booking confirmation, homework checks, expectation setting as the closer</li>
+                    <li>Compare Charlie's performance against your human setters side-by-side</li>
+                    <li>Gradually increase Charlie's share of inbound volume as confidence builds</li>
+                    <li>Your human setters can shift to higher-value work — or you can scale back the hiring plans you had in motion</li>
+                    <li>Ongoing optimization: weekly conversation reviews, script refinement, A/B testing messaging approaches</li>
+                </ul>
+            </div>
+
+            <div class="callout-box">
+                <h3>🎯 Your Pace, Your Call</h3>
+                <p>You decide when Charlie is ready for each phase. During sparring, challenge Charlie with everything — tough objections, off-topic questions, even "forget all previous instructions" prompts. The three-judge quality system reviews every response before it's sent. We move to live leads only when you're fully confident. Most clients are live within 1–2 weeks, but there's no rush.</p>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Suzy Crawford Coaching</span>
+        </div>
+    </div>
+
+    <!-- PAGE 8: CONFIRM & NEXT STEPS -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Confirm &amp; Next Steps</div>
+            </div>
+
+            <h2>Please <span>Confirm</span></h2>
+            <div class="section-subtitle">Review the items below so we're fully aligned before kickoff</div>
+
+            <div class="config-card">
+                <h3>📋 Items to Confirm</h3>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Calendar tool</strong> — Which calendar/booking system should Charlie connect to? (Calendly, GHL calendar, other)</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Who takes strategy calls?</strong> — Which team members should appointments be booked with?</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Ideal client profile</strong> — What criteria define a qualified lead? (Revenue level, business stage, services offered, location)</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Disqualification criteria</strong> — Who should Charlie filter OUT? (Complete beginners, specific industries, budget threshold)</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Custom Suzy persona</strong> — Would you like us to build this? If yes, please provide 5 videos of Suzy with transcripts</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Tone preferences</strong> — Emoji usage, formality level, any specific phrases or language to use or avoid</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Reactivation campaign</strong> — Any segments within the 20K database to prioritize or exclude? (e.g., recent leads first, exclude refund requests)</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Pre-call nurture</strong> — Please share your existing email sequence / homework content so Charlie's show rate agent complements (not duplicates) it</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Sales Kick integration</strong> — Any specific requirements for how Charlie interacts with Sales Kick?</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Geographic targeting</strong> — Do you accept clients globally, or only US/UK? Any regions to exclude?</div></div>
+            </div>
+
+            <div class="callout-box" style="margin-top: 20px;">
+                <h3>📝 How to Confirm</h3>
+                <p>Simply reply to the email this was shared in with your answers, corrections, or questions. We'll incorporate everything into your kickoff call so we can hit the ground running. No detail is too small — the more we know upfront, the faster Charlie becomes a 10/10.</p>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Suzy Crawford Coaching</span>
+        </div>
+    </div>
+
+    <!-- PAGE 9: NEXT STEPS CTA -->
+    <div class="page" style="background: linear-gradient(135deg, #050507 0%, #0a0a1a 40%, #0d1528 100%); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2in 1.2in; margin: 0 auto;">
         <div class="cover-logo" style="margin-bottom: 50px;">CHARLIE AI</div>
         <h2 style="color: white; font-size: 36px; margin-bottom: 16px;">Let's get<br>you started.</h2>
         <p style="color: #94a3b8; font-size: 15px; max-width: 450px; margin-bottom: 40px;">If everything above looks good, the next step is booking your kickoff call. We'll configure Charlie together and have your first agents live within days.</p>
         <a href="https://calendly.com/drew-charlie/30min" style="display: inline-block; background: white; color: #0a0a1a; font-size: 15px; font-weight: 700; padding: 14px 40px; border-radius: 50px; text-decoration: none;">Book Your Kickoff Call →</a>
         <div style="margin-top: 50px;">
-            <p style="font-size: 13px; color: #64748b; margin-bottom: 6px;"><a href="https://charlieai.io" style="color: var(--primary); text-decoration: none;">charlieai.io</a> · <a href="mailto:drew@systemsbyai.com" style="color: var(--primary); text-decoration: none;">drew@systemsbyai.com</a></p>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 6px;"><a href="https://charlieai.io" style="color: #834CD2; text-decoration: none;">charlieai.io</a> · <a href="mailto:drew@systemsbyai.com" style="color: #834CD2; text-decoration: none;">drew@systemsbyai.com</a></p>
         </div>
         <div class="cover-bar"></div>
     </div>
