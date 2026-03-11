@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Implementation Plan — Coach Kelly J</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #834CD2;
+            --primary-dark: #534FCD;
+        }
+        @page { size: letter; margin: 0; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            color: #1a1a2e;
+            line-height: 1.6;
+            background: #f1f5f9;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .page {
+            width: 8.5in;
+            min-height: 11in;
+            padding: 0;
+            page-break-after: always;
+            position: relative;
+            overflow: hidden;
+            margin: 0 auto;
+            background: white;
+        }
+        .page:last-child { page-break-after: auto; }
+        @media print {
+            body { background: white; }
+            .page {
+                page-break-after: always !important;
+                page-break-inside: avoid !important;
+                height: 11in !important;
+                overflow: hidden !important;
+            }
+            .page:last-child { page-break-after: auto !important; }
+            h2, h3, .section-subtitle { break-after: avoid; page-break-after: avoid; orphans: 3; widows: 3; }
+            .info-card, .detail-card, .phase-card, .setter-card, .config-card { break-inside: avoid; page-break-inside: avoid; }
+        }
+        .cover {
+            background: linear-gradient(135deg, #050507 0%, #0a0a1a 40%, #0d1528 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 3in 1.2in;
+            position: relative;
+        }
+        .cover::before {
+            content: '';
+            position: absolute;
+            top: -20%;
+            right: -10%;
+            width: 60%;
+            height: 80%;
+            background: radial-gradient(ellipse, rgba(131, 76, 210, 0.08), transparent 70%);
+            border-radius: 50%;
+        }
+        .cover-logo {
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--primary);
+            margin-bottom: 40px;
+            position: relative;
+            z-index: 1;
+        }
+        .cover h1 {
+            font-size: 42px;
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        .cover h1 span { color: var(--primary); }
+        .cover-subtitle {
+            font-size: 18px;
+            color: #94a3b8;
+            font-weight: 400;
+            margin-bottom: 60px;
+            position: relative;
+            z-index: 1;
+        }
+        .cover-meta {
+            position: relative;
+            z-index: 1;
+            font-size: 13px;
+            color: #64748b;
+            line-height: 2;
+        }
+        .cover-meta strong { color: #94a3b8; }
+        .cover-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+        }
+        .content { padding: 0.8in 1.0in; }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 30px;
+        }
+        .page-header-logo {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--primary);
+        }
+        .page-header-title {
+            font-size: 10px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        h2 { font-size: 24px; font-weight: 800; color: #0a0a1a; margin-bottom: 6px; }
+        h2 span { color: var(--primary); }
+        .section-subtitle { font-size: 13px; color: #64748b; margin-bottom: 24px; }
+        h3 { font-size: 16px; font-weight: 700; color: #0a0a1a; margin-bottom: 6px; }
+        p { font-size: 12.5px; color: #374151; margin-bottom: 12px; }
+        .intro-text { font-size: 13.5px; color: #374151; line-height: 1.8; margin-bottom: 25px; }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        .info-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 16px 20px;
+        }
+        .info-card.full-width { grid-column: 1 / -1; }
+        .info-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+        .info-value { font-size: 14px; font-weight: 600; color: #0a0a1a; line-height: 1.4; }
+        .info-value-sm { font-size: 12px; font-weight: 400; color: #475569; line-height: 1.6; }
+        .detail-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 18px 22px;
+            margin-bottom: 14px;
+        }
+        .detail-card h3 { font-size: 14px; display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+        .detail-card p { font-size: 12px; color: #475569; margin-bottom: 0; line-height: 1.6; }
+        .detail-card ul { margin: 6px 0 0 16px; padding: 0; }
+        .detail-card ul li { font-size: 12px; color: #475569; margin-bottom: 4px; line-height: 1.5; }
+        .client-quote {
+            background: linear-gradient(135deg, #050507, #0d1528);
+            border-radius: 12px;
+            padding: 22px 26px;
+            margin: 20px 0;
+            position: relative;
+        }
+        .client-quote::before {
+            content: '\201C';
+            font-size: 48px;
+            font-weight: 800;
+            color: var(--primary);
+            position: absolute;
+            top: 8px;
+            left: 18px;
+            opacity: 0.5;
+        }
+        .client-quote p {
+            color: #e2e8f0;
+            font-size: 13px;
+            font-style: italic;
+            line-height: 1.7;
+            margin-bottom: 0;
+            padding-left: 20px;
+        }
+        .client-quote .quote-attr {
+            color: #94a3b8;
+            font-size: 11px;
+            font-style: normal;
+            margin-top: 8px;
+            padding-left: 20px;
+        }
+        .setter-card {
+            background: linear-gradient(135deg, #f0f0ff, #e8e0ff);
+            border: 1px solid #c4b5fd;
+            border-radius: 10px;
+            padding: 18px 22px;
+            margin-bottom: 14px;
+        }
+        .setter-card h3 { font-size: 14px; color: var(--primary-dark); margin-bottom: 4px; }
+        .setter-card p { font-size: 12px; color: #3b3270; margin-bottom: 0; line-height: 1.6; }
+        .setter-card .setter-detail { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .setter-tag {
+            background: rgba(131, 76, 210, 0.15);
+            color: var(--primary-dark);
+            font-size: 10px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+        .phase-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px 22px;
+            margin-bottom: 14px;
+            border-left: 4px solid var(--primary);
+        }
+        .phase-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+        .phase-card h3 { font-size: 15px; margin-bottom: 6px; }
+        .phase-card p { font-size: 12px; color: #475569; margin-bottom: 0; }
+        .phase-card ul { margin: 6px 0 0 16px; padding: 0; }
+        .phase-card ul li { font-size: 12px; color: #475569; margin-bottom: 3px; line-height: 1.5; }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 14px;
+            margin-top: 20px;
+        }
+        .metric-card {
+            background: linear-gradient(135deg, #050507, #0d1528);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        .metric-number { font-size: 32px; font-weight: 800; color: var(--primary); line-height: 1.1; }
+        .metric-label { font-size: 11px; color: #94a3b8; margin-top: 4px; line-height: 1.4; }
+        .callout-box {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border: 1px solid #7dd3fc;
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin: 16px 0;
+        }
+        .callout-box h3 { font-size: 13px; color: #0c4a6e; margin-bottom: 4px; }
+        .callout-box p { font-size: 11.5px; color: #0e4f6e; margin-bottom: 0; line-height: 1.6; }
+        .config-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 18px 22px;
+            margin-bottom: 14px;
+        }
+        .config-card h3 { font-size: 14px; margin-bottom: 6px; }
+        .config-card p { font-size: 12px; color: #475569; margin-bottom: 0; line-height: 1.6; }
+        .config-card ul { margin: 6px 0 0 16px; padding: 0; }
+        .config-card ul li { font-size: 12px; color: #475569; margin-bottom: 4px; line-height: 1.5; }
+        .confirm-item {
+            display: flex;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 12px;
+            color: #374151;
+        }
+        .confirm-item:last-child { border-bottom: none; }
+        .confirm-check {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #cbd5e1;
+            border-radius: 4px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .page-footer {
+            position: absolute;
+            bottom: 30px;
+            left: 1.0in;
+            right: 1.0in;
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PAGE 1: COVER -->
+    <div class="page cover">
+        <div class="cover-logo">CHARLIE AI</div>
+        <h1>Implementation Plan<br>for <span>Coach Kelly J</span></h1>
+        <div class="cover-subtitle">Your personalized AI setter deployment — built around your funnel, your audience, and your growth goals.</div>
+        <div class="cover-meta">
+            <strong>Prepared:</strong> March 11, 2026
+        </div>
+        <div class="cover-bar"></div>
+    </div>
+
+    <!-- PAGE 2: YOUR BUSINESS AT A GLANCE -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Implementation Plan</div>
+            </div>
+
+            <h2>Your Business at a <span>Glance</span></h2>
+            <div class="section-subtitle">Here's what we captured from our conversation — please confirm everything looks right.</div>
+
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-label">Business</div>
+                    <div class="info-value">Coach Kelly J</div>
+                    <div class="info-value-sm">coachkellyj.com · Jefferson Consulting Inc.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Point of Contact</div>
+                    <div class="info-value">Kelly Jefferson, PhD &amp; AJ Jefferson</div>
+                    <div class="info-value-sm">Kelly is the face of the brand and workshop presenter. AJ manages operations and business development.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Industry</div>
+                    <div class="info-value">High-Ticket Coaching</div>
+                    <div class="info-value-sm">Coaching coaches and service providers (especially therapists) on transitioning from 1-on-1 clients to group coaching, high-ticket sales, and team building</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Offer Tiers</div>
+                    <div class="info-value">$5K · $12K · $35K</div>
+                    <div class="info-value-sm">Kelly pitches the $5K on the workshop. Closers assess fit for the $12K after the call. $35K is the premium tier. Prospects must book a call to enroll — no direct purchase from the workshop.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Primary Funnel</div>
+                    <div class="info-value">Meta Ads → Live Workshop (Weekly)</div>
+                    <div class="info-value-sm">Meta ads drive to a landing page opt-in → free live workshop every Tuesday → CTA to application → setter or closer based on application → close. Secondary funnel: Coach Quiz on website (organic catch-all).</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Weekly Lead Volume</div>
+                    <div class="info-value">1,000–1,200 Leads/Week</div>
+                    <div class="info-value-sm">~25% workshop show rate (250 attendees). 60% show rate to booked closer calls. 20% close rate.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">CRM</div>
+                    <div class="info-value">GoHighLevel</div>
+                    <div class="info-value-sm">Twilio for SMS · A2P registered ✓</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Database Size</div>
+                    <div class="info-value">100,000+ Leads</div>
+                    <div class="info-value-sm">Accumulated leads that haven't been reactivated — setters and closers focused on new weekly leads, no bandwidth for follow-up on existing database</div>
+                </div>
+                <div class="info-card full-width">
+                    <div class="info-label">Current Team &amp; Setup</div>
+                    <div class="info-value-sm">Four human setters calling registrants pre-workshop to try to book calls, plus closers handling post-workshop applications. Recent Sales Kick audit revealed setters are dialing at 50% of expected capacity — a significant gap. Closers and setters both tend to focus on new weekly leads, meaning follow-up on prospects who didn't close or didn't attend drops off quickly. Workshop runs every Tuesday, closers work the rest of the week, then the cycle restarts.</div>
+                </div>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Coach Kelly J</span>
+        </div>
+    </div>
+
+    <!-- PAGE 3: WHAT WE HEARD -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Discovery Summary</div>
+            </div>
+
+            <h2>What We <span>Heard</span></h2>
+            <div class="section-subtitle">The key challenges and opportunities you shared with us</div>
+
+            <div class="detail-card">
+                <h3>📉 750 Registrants Aren't Showing Up Every Week</h3>
+                <p>You're pulling 1,000–1,200 leads per week into the top of your funnel, but only about 25% are showing up to the live workshop. That's roughly 750 people every single week who registered, raised their hand, and then didn't attend. Your setters are calling registrants to try to book pre-workshop calls, but the Sales Kick audit revealed they're dialing at half the capacity they should be. Charlie responds in under 60 seconds, 24/7, and follows up persistently with every registrant — acting as Kelly's assistant, building rapport, surfacing their goals, and making sure they show up on Tuesday. Getting this number from 250 to 400+ attendees per week — without spending another dollar on ads — is the single highest-leverage move available.</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>🔄 100,000+ Leads Sitting Untouched</h3>
+                <p>You've accumulated over 100,000 leads in GoHighLevel that haven't been re-engaged. Your setters and closers are fully consumed by the weekly cycle — new leads come in, workshop runs Tuesday, closers work the rest of the week, and then it starts over. There's no bandwidth left to work the existing database. A single reactivation campaign targeting these leads — especially those where Charlie already captured goals and pain points during the initial conversation — is typically where we see the fastest and most significant ROI.</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>📊 60% Show Rate to Closer Calls — Room to Grow</h3>
+                <p>When prospects book a call with your closers, 60% show up. Most of our clients with similar funnels see 70–80%. Charlie's show rate agent — texting as the closer from a separate number minutes after booking — adds the personal touch and urgency that pushes this number up. The closer hops on the call knowing the prospect is prepped, has reviewed the materials, and is ready to make a decision.</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>🚪 Post-Webinar Drop-Off</h3>
+                <p>After the workshop, Kelly pitches the $5K program and directs attendees to an application. But not everyone fills out that application right away — and those who don't tend to go cold quickly. Charlie follows up with every attendee who didn't complete the application, surfaces what resonated with them on the workshop, and drives them back to the application or directly onto a call.</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>👥 Four Setters — Where Do They Fit?</h3>
+                <p>Kelly asked the right question: "What does the setter role become?" The answer is phased. Phase 1 fills holes where your setters aren't spending time today (reactivation, webinar show rate, post-webinar follow-up). Phase 2 puts Charlie head-to-head with your setters on their existing workflow — and you look at the data. More often than not, Charlie performs stronger. Your setters can then shift to higher-value phone work, or you can reduce headcount over time as confidence builds.</p>
+            </div>
+
+            <div class="client-quote">
+                <p>I really do think that the first opportunity is getting more people to show up. We could really increase the revenue of the business without spending more on ads.</p>
+                <p class="quote-attr">— Kelly Jefferson, Discovery Call</p>
+            </div>
+
+            <div class="client-quote" style="margin-top: 12px;">
+                <p>No, man, we're ready to go. No need to marinate.</p>
+                <p class="quote-attr">— AJ Jefferson, Discovery Call</p>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Coach Kelly J</span>
+        </div>
+    </div>
+
+    <!-- PAGE 4: YOUR AI SETTERS — PHASE 1 -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Your AI Setters</div>
+            </div>
+
+            <h2>What We're <span>Building</span> for You</h2>
+            <div class="section-subtitle">Six specialized AI agents deployed in three phases — starting with what delivers value fastest</div>
+
+            <p class="intro-text" style="margin-bottom: 18px; font-weight: 600; color: #0a0a1a; font-size: 15px;">Phase 1 — Weeks 1–2: Fill the Gaps</p>
+            <p class="intro-text" style="margin-top: 0;">These agents target the opportunities your team doesn't have bandwidth for today — without changing your current setter or closer workflows.</p>
+
+            <div class="setter-card">
+                <h3>📺 Webinar Show Rate Agent</h3>
+                <p>The highest-leverage agent in your deployment. When someone registers for the weekly workshop, Charlie reaches out within 60 seconds as Kelly's assistant — a friendly concierge. Builds rapport with a gap-selling approach: "What are you hoping to get out of the workshop?" → "What's been the main hurdle?" This does two things: it dramatically increases the chance they actually show up on Tuesday, and it captures their goals and pain points as custom fields in GHL — which powers every downstream agent. Follows up persistently with reminders, value drops, and personal check-ins leading up to the live event. Goal: push weekly attendance from ~250 to 400+.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">1,000+ Leads/Week</span>
+                    <span class="setter-tag">60-Second Response</span>
+                    <span class="setter-tag">Gap Selling</span>
+                    <span class="setter-tag">Goal &amp; Pain Capture</span>
+                    <span class="setter-tag">GHL Custom Fields</span>
+                    <span class="setter-tag">Workshop Reminders</span>
+                    <span class="setter-tag">Persistent Follow-up</span>
+                </div>
+            </div>
+
+            <div class="setter-card">
+                <h3>🔄 Reactivation Agent</h3>
+                <p>Re-engages your 100,000+ dormant leads with personalized, conversational outreach. Where Charlie has captured prior context (goals, hurdles, past conversations), the reactivation is highly personalized: "Hey Kelly, last time we spoke you were looking to scale your coaching practice. How's that coming along?" For leads without prior context, Charlie uses proven reactivation templates — scholarship plays, exclusive workshop invitations, and value-first check-ins. Follows up persistently until they re-engage, book a call, or tell us to stop.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">100K+ Lead Database</span>
+                    <span class="setter-tag">Context-Aware Outreach</span>
+                    <span class="setter-tag">Scholarship Plays</span>
+                    <span class="setter-tag">Workshop Invitations</span>
+                    <span class="setter-tag">Persistent Follow-up</span>
+                    <span class="setter-tag">Calendar Booking</span>
+                </div>
+            </div>
+
+            <div class="setter-card">
+                <h3>📋 Post-Webinar Follow-Up Agent</h3>
+                <p>Targets attendees who watched the workshop but didn't complete the application. Charlie reaches out shortly after the event, references the workshop content, and drives them to either complete the application or book directly onto a closer's calendar. Catches the momentum while the workshop content is still fresh — before they have time to talk themselves out of it. Also follows up with registrants who no-showed the workshop to invite them to the next one.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">Post-Workshop Trigger</span>
+                    <span class="setter-tag">Application Completion</span>
+                    <span class="setter-tag">Direct Booking</span>
+                    <span class="setter-tag">No-Show Re-Invitation</span>
+                    <span class="setter-tag">Momentum Capture</span>
+                </div>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Coach Kelly J</span>
+        </div>
+    </div>
+
+    <!-- PAGE 5: YOUR AI SETTERS — PHASE 2 & 3 -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Your AI Setters (continued)</div>
+            </div>
+
+            <p class="intro-text" style="margin-bottom: 18px; font-weight: 600; color: #0a0a1a; font-size: 15px;">Phase 2 — Weeks 2–4: Optimize the Close</p>
+            <p class="intro-text" style="margin-top: 0;">Once Phase 1 agents are performing, we add agents that increase your close rate and recover lost deals.</p>
+
+            <div class="setter-card">
+                <h3>📈 Closer Call Show Rate Agent</h3>
+                <p>Five minutes after a prospect books a call with your closer, Charlie texts from the closer's number: "Hey, it's [closer name]. Looking forward to our call. Just a heads up, we don't allow our schedule to stay open — if you need to reschedule, let me know now." Then drops into sales collateral, confirms they've reviewed the materials, and sends personal reminders leading up to the call. This agent pushes your 60% closer call show rate toward 70–80%. Your closers hop on the call knowing the prospect is prepped and ready to make a decision.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">Texts as the Closer</span>
+                    <span class="setter-tag">Closer's Number</span>
+                    <span class="setter-tag">5 Min After Booking</span>
+                    <span class="setter-tag">Bold Expectation Setting</span>
+                    <span class="setter-tag">Sales Collateral Drop</span>
+                    <span class="setter-tag">Show Rate 60% → 80%</span>
+                </div>
+            </div>
+
+            <div class="setter-card">
+                <h3>🤝 Post-Call Written Closer</h3>
+                <p>Your closers do great with their high-value prospects, but not every warm lead closes on the first call. For prospects that were warm but didn't close — say 2 out of 10 — have your closer move them to a follow-up stage in the pipeline. Charlie picks them up, impersonates the closer, and follows up persistently to nudge them across the line. These are people who showed up, had a good conversation, but needed more time or another touch. Charlie keeps the relationship alive without your closers having to chase.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">Warm Lead Recovery</span>
+                    <span class="setter-tag">Closer Impersonation</span>
+                    <span class="setter-tag">Pipeline Stage Trigger</span>
+                    <span class="setter-tag">Persistent Follow-up</span>
+                    <span class="setter-tag">Close Rate Lift</span>
+                </div>
+            </div>
+
+            <p class="intro-text" style="margin-bottom: 18px; margin-top: 24px; font-weight: 600; color: #0a0a1a; font-size: 15px;">Phase 3 — Month 2+: Expand &amp; Retain</p>
+
+            <div class="setter-card">
+                <h3>⭐ Referral &amp; NPS Agent</h3>
+                <p>Six months after a client enrolls, Charlie reaches out as the assistant they spoke with early on. Asks for a Net Promoter Score: "Scale of 1 to 10, how would you rate your experience?" Captures constructive feedback and passes it to your team. For the 8s, 9s, and 10s — which are most of them — Charlie asks for referrals: "Do you know anyone in your network who might benefit? Here's your affiliate link — you'll earn a percentage for every person who signs up." Turns your happiest clients into a scalable referral engine.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">6-Month Post-Close</span>
+                    <span class="setter-tag">NPS Scoring</span>
+                    <span class="setter-tag">Feedback Capture</span>
+                    <span class="setter-tag">Affiliate Referral</span>
+                    <span class="setter-tag">Automated Outreach</span>
+                </div>
+            </div>
+
+            <div class="metrics-grid" style="margin-top: 20px;">
+                <div class="metric-card">
+                    <div class="metric-number">100K+</div>
+                    <div class="metric-label">Dormant leads<br>ready to reactivate</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number">400+</div>
+                    <div class="metric-label">Weekly attendee<br>target</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number">80%</div>
+                    <div class="metric-label">Closer call show<br>rate target</div>
+                </div>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Coach Kelly J</span>
+        </div>
+    </div>
+
+    <!-- PAGE 6: CONFIGURATION DETAILS -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Configuration Details</div>
+            </div>
+
+            <h2>How We'll <span>Configure</span> Charlie</h2>
+            <div class="section-subtitle">Technical and brand setup details — please confirm or correct anything that needs updating</div>
+
+            <div class="config-card">
+                <h3>🎨 Brand Voice &amp; Persona</h3>
+                <ul>
+                    <li><strong>Persona:</strong> Charlie will show up as Kelly's assistant — warm, knowledgeable, and encouraging. Mirrors Kelly's energy and communication style as closely as possible.</li>
+                    <li><strong>Tone:</strong> Motivating, empowering, direct — aligned with Kelly's "stop playing small" brand voice</li>
+                    <li><strong>Content sourcing:</strong> We'll feed Charlie your website content, workshop material, program details, and Kelly's background as a Behavioral Intelligence Strategist</li>
+                    <li><strong>Custom persona (optional):</strong> Provide video content of Kelly and we'll build a persona that mirrors her voice, language patterns, and personality</li>
+                </ul>
+            </div>
+
+            <div class="config-card">
+                <h3>⚙️ Technical Integration</h3>
+                <ul>
+                    <li><strong>CRM:</strong> GoHighLevel — deal stages updated automatically (registered → attended → booked → closed)</li>
+                    <li><strong>SMS:</strong> Twilio — A2P registration confirmed and active ✓</li>
+                    <li><strong>iMessage (recommended):</strong> Link integration for blue bubble delivery on iOS — significantly higher response rates. 50 net-new iMessages/day per line, falls back to green SMS after cap. Worth considering especially for the closer show rate agent.</li>
+                    <li><strong>Calendar:</strong> Booking link integration — confirm calendar tool on kickoff</li>
+                    <li><strong>Workshop trigger:</strong> GHL automation fires when someone registers → activates the webinar show rate agent</li>
+                    <li><strong>Post-webinar trigger:</strong> Workshop attendance tracked in GHL → activates follow-up agent for non-applicants</li>
+                </ul>
+            </div>
+
+            <div class="config-card">
+                <h3>🧠 Knowledge Base (What We'll Feed Charlie)</h3>
+                <ul>
+                    <li>coachkellyj.com — full site content, program details, and positioning</li>
+                    <li>Kelly's bio — Behavioral Intelligence Strategist, former federal Investigative Intelligence Analyst with the DOJ, creator of The Modern Laws of Success™</li>
+                    <li>Workshop content and pitch structure — so Charlie can reference what was covered and reinforce the value</li>
+                    <li>Program FAQ — pricing tiers ($5K/$12K/$35K), what's included, delivery format, expected outcomes</li>
+                    <li>Qualification criteria — confirm ideal client profile on kickoff</li>
+                    <li>Common objections — what prospects typically push back on and how your closers handle them</li>
+                    <li>Coach Quiz content — so Charlie understands the secondary organic funnel</li>
+                </ul>
+            </div>
+
+            <div class="config-card">
+                <h3>📊 Data Flow &amp; Custom Fields</h3>
+                <ul>
+                    <li><strong>Goal capture:</strong> When Charlie surfaces a prospect's goal ("I want to scale to $20K/month"), it's pushed to a custom field in GHL</li>
+                    <li><strong>Pain point capture:</strong> When Charlie uncovers the hurdle ("I can't figure out group coaching on my own"), it's pushed to a separate custom field</li>
+                    <li><strong>Why this matters:</strong> Every downstream agent — reactivation, post-webinar, closer follow-up — can reference these fields for highly personalized outreach instead of generic spray-and-pray</li>
+                    <li><strong>Closer prep:</strong> Closers can see goals and pain points before the call even starts</li>
+                </ul>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Coach Kelly J</span>
+        </div>
+    </div>
+
+    <!-- PAGE 7: IMPLEMENTATION ROADMAP -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Implementation Roadmap</div>
+            </div>
+
+            <h2>Your <span>Roadmap</span></h2>
+            <div class="section-subtitle">From kickoff to fully operational — at your pace</div>
+
+            <div class="phase-card">
+                <div class="phase-label">Phase 1 — Weeks 1–2: Fill the Gaps</div>
+                <h3>Build, Spar, and Launch Core Agents</h3>
+                <ul>
+                    <li><strong>Monday: Kickoff call (1 hour)</strong> — Build the first two agents together: webinar show rate agent and reactivation agent. Load knowledge base, set Kelly's persona and voice, define qualification criteria, connect GHL integrations and triggers.</li>
+                    <li><strong>Tuesday–Thursday: Sparring</strong> — Roleplay as prospects, fire objections, test edge cases. Give real-time feedback: positive (Charlie does more of it) and constructive (Charlie never does it again). Half-hour calls each day until Charlie is a 10/10.</li>
+                    <li><strong>Friday: Integration testing</strong> — Test GHL triggers, custom field pushes, calendar booking, and SMS delivery. Deploy when ready.</li>
+                    <li><strong>Week 2:</strong> Charlie is live on webinar registrants and reactivation database. Monitor conversations daily (10 minutes), provide feedback, optimize. Launch post-webinar follow-up agent once the first two are stable.</li>
+                    <li>Your existing setters and closers continue unchanged — Charlie fills holes where they aren't today.</li>
+                </ul>
+            </div>
+
+            <div class="phase-card">
+                <div class="phase-label">Phase 2 — Weeks 2–4: Optimize the Close</div>
+                <h3>Show Rate + Written Closer Agents</h3>
+                <ul>
+                    <li><strong>Launch Closer Call Show Rate Agent</strong> — Texts from the closer's number, confirms prep, drives show rate from 60% toward 80%</li>
+                    <li><strong>Launch Post-Call Written Closer</strong> — Picks up warm leads that didn't close on the first call, follows up as the closer</li>
+                    <li><strong>Head-to-head testing (optional):</strong> Give each of your 4 setters 20% of leads and Charlie the remaining 20%. Compare the data. Adjust allocation based on performance.</li>
+                    <li>Ongoing optimization: weekly conversation reviews, script refinement, A/B testing messaging approaches</li>
+                </ul>
+            </div>
+
+            <div class="phase-card">
+                <div class="phase-label">Phase 3 — Month 2+: Expand &amp; Retain</div>
+                <h3>Referrals, NPS, and Scale</h3>
+                <ul>
+                    <li><strong>Launch Referral &amp; NPS Agent</strong> — Automated outreach to past clients for feedback and affiliate referrals</li>
+                    <li>Gradually increase Charlie's share of inbound volume as confidence builds</li>
+                    <li>Additional agents available: cancellation rebooking, no-show recovery, payment link nudges, onboarding sequences</li>
+                </ul>
+            </div>
+
+            <div class="callout-box">
+                <h3>⚠️ One Rule</h3>
+                <p>Once an agent is performing — don't touch it. The biggest issue we see is clients making changes to a working agent and cutting their numbers in half. Work with us to optimize; once it's dialed in, let it run. We'll tell you when something needs adjusting.</p>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Coach Kelly J</span>
+        </div>
+    </div>
+
+    <!-- PAGE 8: CONFIRM & NEXT STEPS -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Confirm &amp; Next Steps</div>
+            </div>
+
+            <h2>Please <span>Confirm</span></h2>
+            <div class="section-subtitle">Review the items below so we're fully aligned before kickoff</div>
+
+            <div class="config-card">
+                <h3>📋 Items to Confirm</h3>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Calendar tool</strong> — Which calendar/booking system should Charlie connect to for closer calls? (Calendly, GHL calendar, other)</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Closer names</strong> — Who are the closers Charlie should impersonate for the show rate agent? (Names and phone numbers)</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Ideal client profile</strong> — What criteria define a qualified prospect? (Business stage, revenue level, service type, experience level)</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Disqualification criteria</strong> — Who should Charlie filter out? (Complete beginners, specific situations, budget threshold)</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Workshop details</strong> — Is the workshop always Tuesday? Same time? Do you have a registration confirmation page or email we should reference?</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Application link</strong> — What's the post-webinar application URL so Charlie can drive non-applicants to it?</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Reactivation segments</strong> — Any segments within the 100K database to prioritize or exclude? (e.g., most recent first, exclude refunds)</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Referral/affiliate program</strong> — Do you have an existing affiliate program with a link and commission structure, or should we help set one up?</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>iMessage via Link</strong> — Would you like to set up Link for blue bubble iMessage delivery? Recommended especially for the closer show rate agent.</div></div>
+            </div>
+
+            <div class="callout-box" style="margin-top: 20px;">
+                <h3>📝 How to Confirm</h3>
+                <p>Simply reply to the email this was shared in with your answers, corrections, or questions. We'll incorporate everything into your kickoff call so we can hit the ground running. No detail is too small — the more we know upfront, the faster Charlie becomes a 10/10.</p>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Coach Kelly J</span>
+        </div>
+    </div>
+
+    <!-- PAGE 9: NEXT STEPS CTA -->
+    <div class="page" style="background: linear-gradient(135deg, #050507 0%, #0a0a1a 40%, #0d1528 100%); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2in 1.2in; margin: 0 auto;">
+        <div class="cover-logo" style="margin-bottom: 50px;">CHARLIE AI</div>
+        <h2 style="color: white; font-size: 36px; margin-bottom: 16px;">Let's get<br>you started.</h2>
+        <p style="color: #94a3b8; font-size: 15px; max-width: 450px; margin-bottom: 40px;">If everything above looks good, the next step is booking your kickoff call. We'll configure Charlie together and have your first agents live within days.</p>
+        <a href="https://calendly.com/drew-charlie/30min" style="display: inline-block; background: white; color: #0a0a1a; font-size: 15px; font-weight: 700; padding: 14px 40px; border-radius: 50px; text-decoration: none;">Book Your Kickoff Call →</a>
+        <div style="margin-top: 50px;">
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 6px;"><a href="https://charlieai.io" style="color: #834CD2; text-decoration: none;">charlieai.io</a> · <a href="mailto:drew@systemsbyai.com" style="color: #834CD2; text-decoration: none;">drew@systemsbyai.com</a></p>
+        </div>
+        <div class="cover-bar"></div>
+    </div>
+
+</body>
+</html>
