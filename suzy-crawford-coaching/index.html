@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Implementation Plan — Suzy Crawford Coaching</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #834CD2;
+            --primary-dark: #534FCD;
+        }
+        @page { size: letter; margin: 0; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            color: #1a1a2e;
+            line-height: 1.6;
+            background: white;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .page {
+            width: 8.5in;
+            min-height: 11in;
+            padding: 0;
+            page-break-after: always;
+            position: relative;
+            overflow: hidden;
+        }
+        .page:last-child { page-break-after: auto; }
+        @media print {
+            .page {
+                page-break-after: always !important;
+                page-break-inside: avoid !important;
+                height: 11in !important;
+                overflow: hidden !important;
+            }
+            .page:last-child { page-break-after: auto !important; }
+            h2, h3, .section-subtitle { break-after: avoid; page-break-after: avoid; orphans: 3; widows: 3; }
+            .info-card, .detail-card, .phase-card, .setter-card { break-inside: avoid; page-break-inside: avoid; }
+        }
+        .cover {
+            background: linear-gradient(135deg, #050507 0%, #0a0a1a 40%, #0d1528 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 3in 1.2in;
+            position: relative;
+        }
+        .cover::before {
+            content: '';
+            position: absolute;
+            top: -20%;
+            right: -10%;
+            width: 60%;
+            height: 80%;
+            background: radial-gradient(ellipse, rgba(131, 76, 210, 0.08), transparent 70%);
+            border-radius: 50%;
+        }
+        .cover-logo {
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--primary);
+            margin-bottom: 40px;
+            position: relative;
+            z-index: 1;
+        }
+        .cover h1 {
+            font-size: 42px;
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        .cover h1 span { color: var(--primary); }
+        .cover-subtitle {
+            font-size: 18px;
+            color: #94a3b8;
+            font-weight: 400;
+            margin-bottom: 60px;
+            position: relative;
+            z-index: 1;
+        }
+        .cover-meta {
+            position: relative;
+            z-index: 1;
+            font-size: 13px;
+            color: #64748b;
+            line-height: 2;
+        }
+        .cover-meta strong { color: #94a3b8; }
+        .cover-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+        }
+        .content { padding: 0.8in 1.0in; }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 30px;
+        }
+        .page-header-logo {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--primary);
+        }
+        .page-header-title {
+            font-size: 10px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        h2 { font-size: 24px; font-weight: 800; color: #0a0a1a; margin-bottom: 6px; }
+        h2 span { color: var(--primary); }
+        .section-subtitle { font-size: 13px; color: #64748b; margin-bottom: 24px; }
+        h3 { font-size: 16px; font-weight: 700; color: #0a0a1a; margin-bottom: 6px; }
+        p { font-size: 12.5px; color: #374151; margin-bottom: 12px; }
+        .intro-text { font-size: 13.5px; color: #374151; line-height: 1.8; margin-bottom: 25px; }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        .info-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 16px 20px;
+        }
+        .info-card.full-width { grid-column: 1 / -1; }
+        .info-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+        .info-value { font-size: 14px; font-weight: 600; color: #0a0a1a; line-height: 1.4; }
+        .info-value-sm { font-size: 12px; font-weight: 400; color: #475569; line-height: 1.6; }
+        .detail-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 18px 22px;
+            margin-bottom: 14px;
+        }
+        .detail-card h3 { font-size: 14px; display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+        .detail-card p { font-size: 12px; color: #475569; margin-bottom: 0; line-height: 1.6; }
+        .detail-card ul { margin: 6px 0 0 16px; padding: 0; }
+        .detail-card ul li { font-size: 12px; color: #475569; margin-bottom: 4px; line-height: 1.5; }
+        .client-quote {
+            background: linear-gradient(135deg, #050507, #0d1528);
+            border-radius: 12px;
+            padding: 22px 26px;
+            margin: 20px 0;
+            position: relative;
+        }
+        .client-quote::before {
+            content: '\201C';
+            font-size: 48px;
+            font-weight: 800;
+            color: var(--primary);
+            position: absolute;
+            top: 8px;
+            left: 18px;
+            opacity: 0.5;
+        }
+        .client-quote p {
+            color: #e2e8f0;
+            font-size: 13px;
+            font-style: italic;
+            line-height: 1.7;
+            margin-bottom: 0;
+            padding-left: 20px;
+        }
+        .client-quote .quote-attr {
+            color: #94a3b8;
+            font-size: 11px;
+            font-style: normal;
+            margin-top: 8px;
+            padding-left: 20px;
+        }
+        .setter-card {
+            background: linear-gradient(135deg, #f0f0ff, #e8e0ff);
+            border: 1px solid #c4b5fd;
+            border-radius: 10px;
+            padding: 18px 22px;
+            margin-bottom: 14px;
+        }
+        .setter-card h3 { font-size: 14px; color: var(--primary-dark); margin-bottom: 4px; }
+        .setter-card p { font-size: 12px; color: #3b3270; margin-bottom: 0; line-height: 1.6; }
+        .setter-card .setter-detail { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .setter-tag {
+            background: rgba(131, 76, 210, 0.15);
+            color: var(--primary-dark);
+            font-size: 10px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+        .phase-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px 22px;
+            margin-bottom: 14px;
+            border-left: 4px solid var(--primary);
+        }
+        .phase-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+        .phase-card h3 { font-size: 15px; margin-bottom: 6px; }
+        .phase-card p { font-size: 12px; color: #475569; margin-bottom: 0; }
+        .phase-card ul { margin: 6px 0 0 16px; padding: 0; }
+        .phase-card ul li { font-size: 12px; color: #475569; margin-bottom: 3px; line-height: 1.5; }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 14px;
+            margin-top: 20px;
+        }
+        .metric-card {
+            background: linear-gradient(135deg, #050507, #0d1528);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        .metric-number { font-size: 32px; font-weight: 800; color: var(--primary); line-height: 1.1; }
+        .metric-label { font-size: 11px; color: #94a3b8; margin-top: 4px; line-height: 1.4; }
+        .callout-box {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border: 1px solid #7dd3fc;
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin: 16px 0;
+        }
+        .callout-box h3 { font-size: 13px; color: #0c4a6e; margin-bottom: 4px; }
+        .callout-box p { font-size: 11.5px; color: #0e4f6e; margin-bottom: 0; line-height: 1.6; }
+        .page-footer {
+            position: absolute;
+            bottom: 30px;
+            left: 1.0in;
+            right: 1.0in;
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PAGE 1: COVER -->
+    <div class="page cover">
+        <div class="cover-logo">CHARLIE AI</div>
+        <h1>Implementation Plan<br>for <span>Suzy Crawford<br>Coaching</span></h1>
+        <div class="cover-subtitle">Your personalized AI setter deployment — built around your brand, your audience, and your goals.</div>
+        <div class="cover-meta">
+            <strong>Prepared:</strong> March 11, 2026
+        </div>
+        <div class="cover-bar"></div>
+    </div>
+
+    <!-- PAGE 2: YOUR BUSINESS AT A GLANCE -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Implementation Plan</div>
+            </div>
+
+            <h2>Your Business at a <span>Glance</span></h2>
+            <div class="section-subtitle">Here's what we captured from our conversation — please confirm everything looks right.</div>
+
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-label">Business</div>
+                    <div class="info-value">Freelancer to CEO</div>
+                    <div class="info-value-sm">suzycrawford.com</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Point of Contact</div>
+                    <div class="info-value">Chloe &amp; Lauren</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Industry</div>
+                    <div class="info-value">High-Ticket Coaching</div>
+                    <div class="info-value-sm">Helping freelancers &amp; agency owners scale to $20K+/month with premium retainers and AI systems</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Offer</div>
+                    <div class="info-value">Premium Coaching Program</div>
+                    <div class="info-value-sm">Strategy calls booked via funnel → closers handle the call</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Primary Inbound Channel</div>
+                    <div class="info-value">Instagram (Paid Ads)</div>
+                    <div class="info-value-sm">All inbound flows through Instagram DMs — keyword triggers, CTAs, opt-ins, new followers</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Database Size</div>
+                    <div class="info-value">~20,000+ Leads</div>
+                    <div class="info-value-sm">Existing leads in GoHighLevel ready for reactivation</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">CRM</div>
+                    <div class="info-value">GoHighLevel</div>
+                    <div class="info-value-sm">Twilio A2P registered for SMS deliverability</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Outreach Channels</div>
+                    <div class="info-value">SMS · WhatsApp · IG DM</div>
+                    <div class="info-value-sm">US leads → SMS (Twilio) · UK leads → WhatsApp · All inbound → Instagram DM</div>
+                </div>
+                <div class="info-card full-width">
+                    <div class="info-label">Current Setup</div>
+                    <div class="info-value-sm">Two human setters (one UK-based, one US-based) handling inbound leads. Strong pre-call nurture sequence already in place — homework warm-up, walkthrough video, email sequence with objection handling, authority building, and storytelling. Current show rate sits at approximately 70%.</div>
+                </div>
+                <div class="info-card full-width">
+                    <div class="info-label">Audience</div>
+                    <div class="info-value-sm">Primarily female marketing freelancers and agency owners. Communication style should be warm, personal, and empowering — emotion-led, not hard-sell. Brand voice is supportive mentor energy, aligned with Suzy's ex-Google exec credibility and the Freelancer to CEO community.</div>
+                </div>
+            </div>
+
+            <div class="callout-box">
+                <h3>📝 Please Review</h3>
+                <p>If anything above doesn't look right, let us know before kickoff so we can make corrections. Getting these details right ensures Charlie sounds like a natural extension of your brand from day one.</p>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Suzy Crawford Coaching</span>
+        </div>
+    </div>
+
+    <!-- PAGE 3: WHAT WE HEARD -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Discovery Summary</div>
+            </div>
+
+            <h2>What We <span>Heard</span></h2>
+            <div class="section-subtitle">The key challenges and goals you shared with us</div>
+
+            <div class="detail-card">
+                <h3>⚡ Speed &amp; Consistency</h3>
+                <p>Your two setters are doing great work, but there aren't enough hours in the day. Inbound leads need immediate responses — and with a growing pipeline, your team is stretched between handling new leads and working through the existing database. Charlie responds in under 60 seconds, 24/7, and never misses a follow-up.</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>🔄 20,000+ Untouched Leads</h3>
+                <p>You have approximately 20,000 leads sitting in GoHighLevel that need reactivation. Your setters don't have the bandwidth to work through them while also handling daily inbound. This is a massive revenue opportunity — and exactly where Charlie delivers the fastest ROI.</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>👩 Your Audience Requires a Specific Touch</h3>
+                <p>Your community is female freelancers and agency owners. The tone needs to be warm, personal, and empowering — emotion-led conversations that match what attracted them to your brand in the first place. Charlie will be configured to match your brand voice, and we can create a custom persona modeled after Suzy using video transcripts.</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>📊 Strong Foundation to Build On</h3>
+                <p>Your ~70% show rate tells us your pre-call nurture is already working well. We're not here to replace what's working — we're here to complement it. Charlie will layer in additional touchpoints (pre-call confirmation, no-show recovery) to push that number even higher.</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>🤖 Previous AI Experience</h3>
+                <p>We understand you've had a negative experience with AI in the past. That's exactly why Charlie is built differently — with three independent AI judges that review every single response before it's sent. One checks for conversational congruency, one checks alignment with your training and feedback, and one ensures Charlie is at the right stage of the conversation. You'll have full control during the sparring phase to test, challenge, and tune Charlie until you're 100% confident.</p>
+            </div>
+
+            <div class="client-quote">
+                <p>We've always wanted an AI setter because we know it would be fast, and we know it would be efficient of our time.</p>
+                <p class="quote-attr">— Chloe, Discovery Call</p>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Suzy Crawford Coaching</span>
+        </div>
+    </div>
+
+    <!-- PAGE 4: YOUR AI SETTERS -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Your AI Setters</div>
+            </div>
+
+            <h2>What We're <span>Building</span> for You</h2>
+            <div class="section-subtitle">Five specialized AI agents deployed in two phases</div>
+
+            <p class="intro-text" style="margin-bottom: 18px; font-weight: 600; color: #0a0a1a;">Phase 1 — Weeks 1–2: Quick Wins</p>
+            <p class="intro-text" style="margin-top: 0;">These agents complement your existing setup without disrupting anything. They work the opportunities your team doesn't have time for today.</p>
+
+            <div class="setter-card">
+                <h3>🔄 Reactivation Agent</h3>
+                <p>Re-engages your ~20,000 dormant leads with personalized, gap-selling outreach. Follows up until they book or tell us to stop. US leads contacted via SMS, UK leads via WhatsApp. This is where Charlie typically delivers the fastest ROI — a single reactivation campaign can generate significant revenue from leads you've already paid to acquire.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">20K Lead Database</span>
+                    <span class="setter-tag">SMS (US)</span>
+                    <span class="setter-tag">WhatsApp (UK)</span>
+                    <span class="setter-tag">Gap Selling</span>
+                    <span class="setter-tag">Calendar Booking</span>
+                </div>
+            </div>
+
+            <div class="setter-card">
+                <h3>🚫 Cancellation Rebooking Agent</h3>
+                <p>When a prospect cancels their strategy call, Charlie immediately reaches out to understand why and reschedule. Warm, empathetic approach — not pushy. Catches cancellations before they go cold and gets them back on the calendar.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">Cancellation Detection</span>
+                    <span class="setter-tag">Empathetic Re-engagement</span>
+                    <span class="setter-tag">Rescheduling</span>
+                </div>
+            </div>
+
+            <div class="setter-card">
+                <h3>📞 No-Show Rebooking Agent</h3>
+                <p>When someone doesn't show up for their call, Charlie follows up within minutes to rebook. No judgment — just a friendly check-in and a new time slot. Recovers revenue that would otherwise walk away.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">No-Show Detection</span>
+                    <span class="setter-tag">Quick Follow-up</span>
+                    <span class="setter-tag">Rebooking</span>
+                </div>
+            </div>
+
+            <p class="intro-text" style="margin-bottom: 18px; margin-top: 28px; font-weight: 600; color: #0a0a1a;">Phase 2 — Weeks 2–4: Scale Up</p>
+            <p class="intro-text" style="margin-top: 0;">Once you're confident in Charlie's quality from Phase 1, we expand into your live funnel.</p>
+
+            <div class="setter-card">
+                <h3>🎯 Top of Funnel Setter</h3>
+                <p>Handles your inbound Instagram DM leads in real time — responds in under 60 seconds, qualifies for intent and readiness, and books qualified prospects directly onto your strategy call calendar. Nurtures everyone else with value-first follow-up until they're ready. This is the agent that eventually gives your human setters room to breathe.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">Instagram DM</span>
+                    <span class="setter-tag">60-Second Response</span>
+                    <span class="setter-tag">Lead Qualification</span>
+                    <span class="setter-tag">Calendar Booking</span>
+                    <span class="setter-tag">Nurture Sequence</span>
+                </div>
+            </div>
+
+            <div class="setter-card">
+                <h3>📈 Show Rate Optimization Agent</h3>
+                <p>Reaches out after every booking to confirm the appointment, check that homework and the walkthrough video have been completed, and set expectations for the call. Layers on top of your existing pre-call nurture to push your already-strong 70% show rate even higher.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">Post-Booking Confirmation</span>
+                    <span class="setter-tag">Homework &amp; VSL Check</span>
+                    <span class="setter-tag">Expectation Setting</span>
+                    <span class="setter-tag">Show Rate Lift</span>
+                </div>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Suzy Crawford Coaching</span>
+        </div>
+    </div>
+
+    <!-- PAGE 5: IMPLEMENTATION ROADMAP -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Implementation Roadmap</div>
+            </div>
+
+            <h2>Your <span>Roadmap</span></h2>
+            <div class="section-subtitle">From kickoff to fully operational — at your pace</div>
+
+            <div class="phase-card">
+                <div class="phase-label">Phase 1 — Weeks 1–2</div>
+                <h3>Quick Wins: Reactivation + Recovery</h3>
+                <ul>
+                    <li><strong>Kickoff call</strong> — We configure Charlie together: brand voice, tone, qualification criteria, knowledge base</li>
+                    <li><strong>Sparring sessions</strong> — You roleplay as prospects, test Charlie's responses, and give feedback until you're fully confident</li>
+                    <li><strong>Custom persona option</strong> — Provide 5 videos of Suzy with transcripts and we'll build a persona that matches her voice exactly</li>
+                    <li><strong>Launch Reactivation Agent</strong> — Start working your 20,000+ lead database immediately</li>
+                    <li><strong>Launch Cancellation Rebooking Agent</strong> — Catch cancellations before they go cold</li>
+                    <li><strong>Launch No-Show Rebooking Agent</strong> — Recover missed appointments within minutes</li>
+                    <li>Your existing setters and funnel continue unchanged — Charlie adds to what's working</li>
+                </ul>
+            </div>
+
+            <div class="phase-card">
+                <div class="phase-label">Phase 2 — Weeks 2–4</div>
+                <h3>Scale: Top of Funnel + Show Rate</h3>
+                <ul>
+                    <li><strong>Launch Top of Funnel Setter</strong> — Charlie starts handling inbound Instagram DM leads in real time</li>
+                    <li><strong>Launch Show Rate Optimization Agent</strong> — Post-booking confirmation, homework checks, expectation setting</li>
+                    <li>Compare Charlie's performance against your human setters side-by-side</li>
+                    <li>Gradually increase Charlie's share of inbound as confidence builds</li>
+                    <li>Your human setters can focus on higher-value activities — or you can scale back hiring plans</li>
+                    <li>Ongoing optimization: review conversations, refine scripts, A/B test approaches</li>
+                </ul>
+            </div>
+
+            <div class="callout-box">
+                <h3>🎯 Your Pace, Your Call</h3>
+                <p>You decide when Charlie is ready for each phase. During sparring, challenge Charlie with every objection, edge case, and curveball you can think of. We move to live leads only when you say Charlie is a 10 out of 10. The three-judge quality system ensures every response is reviewed before it's sent — so you can trust what goes out.</p>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-number">20K+</div>
+                    <div class="metric-label">Dormant leads<br>ready to reactivate</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number">80%+</div>
+                    <div class="metric-label">Show rate<br>target</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number">&lt;60s</div>
+                    <div class="metric-label">Response time<br>on every channel</div>
+                </div>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Suzy Crawford Coaching</span>
+        </div>
+    </div>
+
+    <!-- PAGE 6: NEXT STEPS -->
+    <div class="page" style="background: linear-gradient(135deg, #050507 0%, #0a0a1a 40%, #0d1528 100%); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2in 1.2in;">
+        <div class="cover-logo" style="margin-bottom: 50px;">CHARLIE AI</div>
+        <h2 style="color: white; font-size: 36px; margin-bottom: 16px;">Let's get<br>you started.</h2>
+        <p style="color: #94a3b8; font-size: 15px; max-width: 450px; margin-bottom: 40px;">If everything above looks good, the next step is booking your kickoff call. We'll configure Charlie together and have your first agents live within days.</p>
+        <a href="https://calendly.com/drew-charlie/30min" style="display: inline-block; background: white; color: #0a0a1a; font-size: 15px; font-weight: 700; padding: 14px 40px; border-radius: 50px; text-decoration: none;">Book Your Kickoff Call →</a>
+        <div style="margin-top: 50px;">
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 6px;"><a href="https://charlieai.io" style="color: var(--primary); text-decoration: none;">charlieai.io</a> · <a href="mailto:drew@systemsbyai.com" style="color: var(--primary); text-decoration: none;">drew@systemsbyai.com</a></p>
+        </div>
+        <div class="cover-bar"></div>
+    </div>
+
+</body>
+</html>
