@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Implementation Plan — Lemonade Life</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #D4A237; /* Lemonade-inspired color */
+            --primary-dark: #B48B2B;
+        }
+        @page { size: letter; margin: 0; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            color: #1a1a2e;
+            line-height: 1.6;
+            background: #f1f5f9;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .page {
+            width: 8.5in;
+            min-height: 11in;
+            padding: 0;
+            page-break-after: always;
+            position: relative;
+            overflow: hidden;
+            margin: 0 auto;
+            background: white;
+        }
+        .page:last-child { page-break-after: auto; }
+        @media print {
+            body { background: white; }
+            .page { page-break-after: always !important; page-break-inside: avoid !important; height: 11in !important; overflow: hidden !important; }
+            .page:last-child { page-break-after: auto !important; }
+            h2, h3, .section-subtitle { break-after: avoid; page-break-after: avoid; orphans: 3; widows: 3; }
+            .info-card, .detail-card, .phase-card, .setter-card, .config-card { break-inside: avoid; page-break-inside: avoid; }
+        }
+        .cover {
+            background: linear-gradient(135deg, #050507 0%, #0a0a1a 40%, #0d1528 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 3in 1.2in;
+            position: relative;
+        }
+        .cover::before {
+            content: '';
+            position: absolute;
+            top: -20%;
+            right: -10%;
+            width: 60%;
+            height: 80%;
+            background: radial-gradient(ellipse, rgba(212, 162, 55, 0.08), transparent 70%);
+            border-radius: 50%;
+        }
+        .cover-logo { font-size: 14px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; color: var(--primary); margin-bottom: 40px; position: relative; z-index: 1; }
+        .cover h1 { font-size: 42px; font-weight: 800; line-height: 1.15; margin-bottom: 20px; position: relative; z-index: 1; }
+        .cover h1 span { color: var(--primary); }
+        .cover-subtitle { font-size: 18px; color: #94a3b8; font-weight: 400; margin-bottom: 60px; position: relative; z-index: 1; }
+        .cover-meta { position: relative; z-index: 1; font-size: 13px; color: #64748b; line-height: 2; }
+        .cover-meta strong { color: #94a3b8; }
+        .cover-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--primary), var(--primary-dark)); }
+        .content { padding: 0.8in 1.0in; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid #e2e8f0; margin-bottom: 30px; }
+        .page-header-logo { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--primary); }
+        .page-header-title { font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+        h2 { font-size: 24px; font-weight: 800; color: #0a0a1a; margin-bottom: 6px; }
+        h2 span { color: var(--primary); }
+        .section-subtitle { font-size: 13px; color: #64748b; margin-bottom: 24px; }
+        h3 { font-size: 16px; font-weight: 700; color: #0a0a1a; margin-bottom: 6px; }
+        p { font-size: 12.5px; color: #374151; margin-bottom: 12px; }
+        .intro-text { font-size: 13.5px; color: #374151; line-height: 1.8; margin-bottom: 25px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+        .info-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 20px; }
+        .info-card.full-width { grid-column: 1 / -1; }
+        .info-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); margin-bottom: 4px; }
+        .info-value { font-size: 14px; font-weight: 600; color: #0a0a1a; line-height: 1.4; }
+        .info-value-sm { font-size: 12px; font-weight: 400; color: #475569; line-height: 1.6; }
+        .detail-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 22px; margin-bottom: 14px; }
+        .detail-card h3 { font-size: 14px; display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+        .detail-card p { font-size: 12px; color: #475569; margin-bottom: 0; line-height: 1.6; }
+        .client-quote { background: linear-gradient(135deg, #050507, #0d1528); border-radius: 12px; padding: 22px 26px; margin: 20px 0; position: relative; }
+        .client-quote::before { content: '\201C'; font-size: 48px; font-weight: 800; color: var(--primary); position: absolute; top: 8px; left: 18px; opacity: 0.5; }
+        .client-quote p { color: #e2e8f0; font-size: 13px; font-style: italic; line-height: 1.7; margin-bottom: 0; padding-left: 20px; }
+        .client-quote .quote-attr { color: #94a3b8; font-size: 11px; font-style: normal; margin-top: 8px; padding-left: 20px; }
+        .setter-card { background: linear-gradient(135deg, #fffbeb, #fef3c7); border: 1px solid #fde68a; border-radius: 10px; padding: 18px 22px; margin-bottom: 14px; }
+        .setter-card h3 { font-size: 14px; color: var(--primary-dark); margin-bottom: 4px; }
+        .setter-card p { font-size: 12px; color: #78350f; margin-bottom: 0; line-height: 1.6; }
+        .phase-card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px 22px; margin-bottom: 14px; border-left: 4px solid var(--primary); }
+        .phase-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--primary); margin-bottom: 4px; }
+        .phase-card h3 { font-size: 15px; margin-bottom: 6px; }
+        .callout-box { background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border: 1px solid #7dd3fc; border-radius: 10px; padding: 16px 20px; margin: 16px 0; }
+        .callout-box h3 { font-size: 13px; color: #0c4a6e; margin-bottom: 4px; }
+        .callout-box p { font-size: 11.5px; color: #0e4f6e; margin-bottom: 0; line-height: 1.6; }
+        .config-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 22px; margin-bottom: 14px; }
+        .config-card h3 { font-size: 14px; margin-bottom: 6px; }
+        .config-card ul { margin: 6px 0 0 16px; padding: 0; }
+        .config-card ul li { font-size: 12px; color: #475569; margin-bottom: 4px; line-height: 1.5; }
+        .page-footer { position: absolute; bottom: 30px; left: 1.0in; right: 1.0in; display: flex; justify-content: space-between; font-size: 9px; color: #94a3b8; }
+        .pricing-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px 22px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; }
+        .pricing-card.recommended { border-color: var(--primary); border-width: 2px; }
+        .pricing-card h3 { font-size: 15px; }
+        .price { font-size: 38px; font-weight: 800; color: #0a0a1a; margin: 10px 0; }
+        .price span { font-size: 14px; font-weight: 500; color: #64748b; }
+        .pricing-card p { font-size: 12px; color: #475569; margin-top: 10px; }
+        .cta-button { display: inline-block; background: white; color: #0a0a1a; font-size: 15px; font-weight: 700; padding: 14px 40px; border-radius: 50px; text-decoration: none; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <!-- PAGE 1: COVER -->
+    <div class="page cover">
+        <div class="cover-logo">CHARLIE AI</div>
+        <h1>Implementation Plan<br>for <span>Lemonade Life</span></h1>
+        <div class="cover-subtitle">Your personalized AI setter deployment — built to convert more qualified applicants, monetize your entire funnel, and provide a world-class client experience.</div>
+        <div class="cover-meta">
+            <strong>Prepared For:</strong> Leanne Webb<br>
+            <strong>Prepared By:</strong> Drew Millington, Chief Commercial Officer<br>
+            <strong>Date:</strong> March 11, 2026
+        </div>
+        <div class="cover-bar"></div>
+    </div>
+
+    <!-- PAGE 2: YOUR BUSINESS AT A GLANCE -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Implementation Plan</div>
+            </div>
+
+            <h2>Your Business at a <span>Glance</span></h2>
+            <div class="section-subtitle">Here's what we captured from our conversation — a summary of your current operations.</div>
+
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-label">Business</div>
+                    <div class="info-value">Lemonade Life</div>
+                    <div class="info-value-sm">Helping corporate women treat divorce like a project to protect their wealth and reduce conflict.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Point of Contact</div>
+                    <div class="info-value">Leanne Webb</div>
+                </div>
+                <div class="info-card full-width">
+                    <div class="info-label">Offer Structure</div>
+                    <div class="info-value">Low-Ticket ($7-37) ➔ Coaching App ➔ Book Call OR $197 Upsell</div>
+                    <div class="info-value-sm">A sophisticated funnel that qualifies leads for high-ticket coaching while monetizing disqualified leads.</div>
+                </div>
+                 <div class="info-card">
+                    <div class="info-label">Key Metric: App-to-Call Rate</div>
+                    <div class="info-value">54%</div>
+                    <div class="info-value-sm">Currently, only 54% of leads you identify as perfectly qualified end up booking a call.</div>
+                </div>
+                 <div class="info-card">
+                    <div class="info-label">Disqualification Rate</div>
+                    <div class="info-value">60%</div>
+                    <div class="info-value-sm">A high percentage of leads are disqualified from coaching and routed to a DIY upsell, creating a major monetization opportunity.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Current Setters</div>
+                    <div class="info-value">Dialer Team (Under Review)</div>
+                    <div class="info-value-sm">Experimenting with a dialer team but finding it emotionally taxing, hard to manage, and not improving overall profit.</div>
+                </div>
+                 <div class="info-card">
+                    <div class="info-label">CRM & Tools</div>
+                    <div class="info-value">GoHighLevel</div>
+                    <div class="info-value-sm">Charlie integrates natively with GHL, syncing all conversations and moving deals automatically.</div>
+                </div>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Lemonade Life</span>
+        </div>
+    </div>
+
+    <!-- PAGE 3: WHAT WE HEARD -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Discovery Summary</div>
+            </div>
+
+            <h2>The <span>Opportunities</span> We Found</h2>
+            <div class="section-subtitle">The key leakage points in your current funnel and how we'll solve them.</div>
+
+            <div class="detail-card">
+                <h3>The 46% Qualified Lead Gap</h3>
+                <p>This is your single biggest opportunity. You've identified a perfect customer avatar, but **only 54% of them book a call**. This means nearly half of your most valuable, pre-qualified leads are slipping away. Charlie will engage this segment with a supportive, on-brand conversation to capture that lost revenue.</p>
+            </div>
+            
+            <div class="detail-card">
+                <h3>Monetizing the Other 60%</h3>
+                <p>You disqualify 60% of your leads from high-ticket coaching, but they are still perfect candidates for your $197 DIY "Planning Suite." Charlie will act as a gentle guide for this segment, using gap selling to help them understand why the DIY offer is the right fit and ensuring a much higher conversion rate than a simple upsell page.</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>The Dialer Dilemma</h3>
+                <p>Your experience with the dialer team is common: more calls, but lower quality, lower close rates, and no real profit lift, all while being emotionally taxing to manage. Your clients are in a sensitive state; they need a concierge, not a cold call. Charlie provides a supportive, brand-congruent experience that builds trust and converts better.</p>
+            </div>
+
+            <div class="client-quote">
+                <p>Right now we're only booking 54% of the people that we know are qualified.</p>
+                <p class="quote-attr">— Leanne Webb, Discovery Call</p>
+            </div>
+             <div class="callout-box">
+                <h3>Maintaining Your High Show Rate</h3>
+                <p>Your current 75% show rate is excellent because you have high-intent buyers. As we dramatically increase booking volume from less-ready leads, maintaining that rate becomes the next challenge. Our automated show-rate sequences are designed to solve this before it becomes a problem.</p>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Lemonade Life</span>
+        </div>
+    </div>
+
+    <!-- PAGE 4: YOUR AI TEAM -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Your AI Team</div>
+            </div>
+
+            <h2>What We're <span>Building</span> for You</h2>
+            <div class="section-subtitle">A multi-agent deployment to plug every leak in your funnel.</div>
+            
+            <div class="setter-card">
+                <h3>🎯 The Qualified Lead Converter</h3>
+                <p>This is your primary growth engine. The moment a lead qualifies via your application but doesn't book a call, this agent will engage them. It will act as a friendly, supportive concierge, using gap-selling questions to understand their specific hurdles and gently guide them to book a call, capturing the 46% of qualified leads you're currently missing.</p>
+            </div>
+
+            <div class="setter-card">
+                <h3>💰 The DIY Upsell Agent</h3>
+                <p>This agent focuses on the 60% of leads you disqualify from high-ticket coaching. Instead of just showing them an upsell page, this agent will start a conversation, acknowledge their situation, and explain why the $197 "Planning Suite" is the perfect next step for them. This conversational approach will dramatically increase your upsell conversion rate.</p>
+            </div>
+
+            <div class="setter-card">
+                <h3>📈 The Show Rate Protector</h3>
+                <p>To support the new influx of bookings, this agent will activate the moment a call is booked. Impersonating the closer, it will run a sequence to confirm the appointment, build rapport, and set expectations. This maintains your high 75% show rate even as call volume from less-qualified leads increases, ensuring your closers' time is always respected.</p>
+            </div>
+            
+            <div class="callout-box">
+                <h3>A Persona Built for Trust</h3>
+                <p>Your clients are making life-altering decisions. The AI persona we design will be supportive, empathetic, and professional — a perfect extension of the Lemonade Life brand. This builds the trust necessary to move prospects to the next step in a way a generic dialer or simple automation never could.</p>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Lemonade Life</span>
+        </div>
+    </div>
+
+    <!-- PAGE 5: IMPLEMENTATION ROADMAP -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Implementation Roadmap</div>
+            </div>
+
+            <h2>Your 1-Week <span>Launch Plan</span></h2>
+            <div class="section-subtitle">From kickoff to live deployment in just five days.</div>
+
+            <div class="phase-card">
+                <div class="phase-label">Day 1: Monday</div>
+                <h3>Kickoff & Build (1 Hour)</h3>
+                <p>We'll officially start, connect to your GoHighLevel instance, and build out your first three agents live on the call: the Qualified Lead Converter, the DIY Upsell Agent, and the Show Rate Protector.</p>
+            </div>
+            <div class="phase-card">
+                <div class="phase-label">Day 2: Tuesday</div>
+                <h3>Roleplay & Refine (1 Hour)</h3>
+                <p>We'll start "sparring" with Charlie in our playground environment. You'll act as a prospect, and we'll give Charlie real-time feedback to perfect his tone, language, and conversational flow to match your brand perfectly.</p>
+            </div>
+            <div class="phase-card">
+                <div class="phase-label">Days 3-4: Wednesday & Thursday</div>
+                <h3>Advanced Sparring (30 Mins Each Day)</h3>
+                <p>We'll continue to refine the agents, testing edge cases and ensuring Charlie handles every delicate scenario with the empathy and professionalism your clients require.</p>
+            </div>
+            <div class="phase-card">
+                <div class="phase-label">Day 5: Friday</div>
+                <h3>Final Testing & Deployment</h3>
+                <p>By Friday, Charlie will be performing at an elite level. We'll run final tests on the GoHighLevel integration and your calendar links, then set your first agents live to start capturing lost revenue.</p>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Lemonade Life</span>
+        </div>
+    </div>
+
+    <!-- PAGE 6: INVESTMENT & NEXT STEPS -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Investment</div>
+            </div>
+
+            <h2>Your <span>Investment</span></h2>
+            <div class="section-subtitle">Special pricing for attendees of the event.</div>
+            
+            <div style="display: flex; justify-content: center; align-items: stretch; margin-top: 30px;">
+                <div class="pricing-card recommended" style="max-width: 350px;">
+                    <h3>Event Attendee Package</h3>
+                    <div class="price">$2,000<span>/mo</span></div>
+                    <p>Standard licensing is $3,500/month. As an event attendee, you receive a nearly 50% discount.</p>
+                </div>
+            </div>
+
+            <div class="config-card" style="margin-top: 20px;">
+                <h3>What's Included in Your Plan:</h3>
+                <ul>
+                    <li><strong>Free Implementation ($3,000 Value)</strong></li>
+                    <li><strong>5 Fully Managed AI Agent Builds</strong> — Our team will build, deploy, and optimize your first five agents with you.</li>
+                    <li><strong>Unlimited Self-Managed Agents</strong> — After the initial setup, you can build as many agents as you need.</li>
+                    <li><strong>5,000 AI Messages per Month</strong> — Sufficient for most clients with up to 2,000 leads/mo. (Overage is nominal).</li>
+                    <li><strong>Native GoHighLevel Integration</strong> — Seamlessly syncs all data and conversations.</li>
+                    <li><strong>All Written Channels</strong> — SMS, iMessage, Facebook DM, Instagram DM, WhatsApp, etc.</li>
+                    <li><strong>Ongoing Training & Slack Support</strong></li>
+                </ul>
+            </div>
+             <div class="callout-box">
+                <h3>Next Steps</h3>
+                <p>Leanne, you've built an incredible, high-integrity business. We're confident Charlie can help you scale your impact (and your revenue) without the stress of managing an underperforming dialer team. The next step is to book the official kickoff call using the link on the final page.</p>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Lemonade Life</span>
+        </div>
+    </div>
+    
+    <!-- PAGE 7: NEXT STEPS CTA -->
+    <div class="page" style="background: linear-gradient(135deg, #050507 0%, #0a0a1a 40%, #0d1528 100%); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2in 1.2in; margin: 0 auto;">
+        <div class="cover-logo" style="margin-bottom: 50px;">CHARLIE AI</div>
+        <h2 style="color: white; font-size: 36px; margin-bottom: 16px;">Ready to build your<br>AI sales team?</h2>
+        <p style="color: #94a3b8; font-size: 15px; max-width: 450px; margin-bottom: 40px;">If everything looks good, the next step is booking your kickoff call. We'll configure Charlie together and have your first agents live and booking calls within a week.</p>
+        <a href="https://calendly.com/drew-charlie/30min" class="cta-button">Book Your Kickoff Call →</a>
+        <div style="margin-top: 50px;">
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 6px;"><a href="https://charlieai.io" style="color: var(--primary); text-decoration: none;">charlieai.io</a> · <a href="mailto:drew@systemsbyai.com" style="color: var(--primary); text-decoration: none;">drew@systemsbyai.com</a></p>
+        </div>
+        <div class="cover-bar"></div>
+    </div>
+
+</body>
+</html>
