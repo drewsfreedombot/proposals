@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Implementation Plan — High Ticket Sales Academy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #834CD2;
+            --primary-dark: #534FCD;
+        }
+        @page { size: letter; margin: 0; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            color: #1a1a2e;
+            line-height: 1.6;
+            background: #f1f5f9;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .page {
+            width: 8.5in;
+            min-height: 11in;
+            padding: 0;
+            page-break-after: always;
+            position: relative;
+            overflow: hidden;
+            margin: 0 auto;
+            background: white;
+        }
+        .page:last-child { page-break-after: auto; }
+        @media print {
+            body { background: white; }
+            .page { page-break-after: always !important; page-break-inside: avoid !important; height: 11in !important; overflow: hidden !important; }
+            .page:last-child { page-break-after: auto !important; }
+            h2, h3, .section-subtitle { break-after: avoid; page-break-after: avoid; orphans: 3; widows: 3; }
+            .info-card, .detail-card, .phase-card, .setter-card, .config-card { break-inside: avoid; page-break-inside: avoid; }
+        }
+        .cover {
+            background: linear-gradient(135deg, #050507 0%, #0a0a1a 40%, #0d1528 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 3in 1.2in;
+            position: relative;
+        }
+        .cover::before {
+            content: '';
+            position: absolute;
+            top: -20%;
+            right: -10%;
+            width: 60%;
+            height: 80%;
+            background: radial-gradient(ellipse, rgba(131, 76, 210, 0.08), transparent 70%);
+            border-radius: 50%;
+        }
+        .cover-logo { font-size: 14px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; color: var(--primary); margin-bottom: 40px; position: relative; z-index: 1; }
+        .cover h1 { font-size: 42px; font-weight: 800; line-height: 1.15; margin-bottom: 20px; position: relative; z-index: 1; }
+        .cover h1 span { color: var(--primary); }
+        .cover-subtitle { font-size: 18px; color: #94a3b8; font-weight: 400; margin-bottom: 60px; position: relative; z-index: 1; }
+        .cover-meta { position: relative; z-index: 1; font-size: 13px; color: #64748b; line-height: 2; }
+        .cover-meta strong { color: #94a3b8; }
+        .cover-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--primary), var(--primary-dark)); }
+        .content { padding: 0.8in 1.0in; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid #e2e8f0; margin-bottom: 30px; }
+        .page-header-logo { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--primary); }
+        .page-header-title { font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+        h2 { font-size: 24px; font-weight: 800; color: #0a0a1a; margin-bottom: 6px; }
+        h2 span { color: var(--primary); }
+        .section-subtitle { font-size: 13px; color: #64748b; margin-bottom: 24px; }
+        h3 { font-size: 16px; font-weight: 700; color: #0a0a1a; margin-bottom: 6px; }
+        p { font-size: 12.5px; color: #374151; margin-bottom: 12px; }
+        .intro-text { font-size: 13.5px; color: #374151; line-height: 1.8; margin-bottom: 25px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+        .info-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 20px; }
+        .info-card.full-width { grid-column: 1 / -1; }
+        .info-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); margin-bottom: 4px; }
+        .info-value { font-size: 14px; font-weight: 600; color: #0a0a1a; line-height: 1.4; }
+        .info-value-sm { font-size: 12px; font-weight: 400; color: #475569; line-height: 1.6; }
+        .detail-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 22px; margin-bottom: 14px; }
+        .detail-card h3 { font-size: 14px; display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+        .detail-card p { font-size: 12px; color: #475569; margin-bottom: 0; line-height: 1.6; }
+        .client-quote { background: linear-gradient(135deg, #050507, #0d1528); border-radius: 12px; padding: 22px 26px; margin: 20px 0; position: relative; }
+        .client-quote::before { content: '\201C'; font-size: 48px; font-weight: 800; color: var(--primary); position: absolute; top: 8px; left: 18px; opacity: 0.5; }
+        .client-quote p { color: #e2e8f0; font-size: 13px; font-style: italic; line-height: 1.7; margin-bottom: 0; padding-left: 20px; }
+        .client-quote .quote-attr { color: #94a3b8; font-size: 11px; font-style: normal; margin-top: 8px; padding-left: 20px; }
+        .setter-card { background: linear-gradient(135deg, #f0f0ff, #e8e0ff); border: 1px solid #c4b5fd; border-radius: 10px; padding: 18px 22px; margin-bottom: 14px; }
+        .setter-card h3 { font-size: 14px; color: var(--primary-dark); margin-bottom: 4px; }
+        .setter-card p { font-size: 12px; color: #3b3270; margin-bottom: 0; line-height: 1.6; }
+        .setter-card .setter-detail { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .setter-tag { background: rgba(131, 76, 210, 0.15); color: var(--primary-dark); font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+        .phase-card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px 22px; margin-bottom: 14px; border-left: 4px solid var(--primary); }
+        .phase-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--primary); margin-bottom: 4px; }
+        .phase-card h3 { font-size: 15px; margin-bottom: 6px; }
+        .phase-card ul { margin: 6px 0 0 16px; padding: 0; }
+        .phase-card ul li { font-size: 12px; color: #475569; margin-bottom: 3px; line-height: 1.5; }
+        .metrics-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-top: 20px; }
+        .metric-card { background: linear-gradient(135deg, #050507, #0d1528); color: white; border-radius: 12px; padding: 20px; text-align: center; }
+        .metric-number { font-size: 32px; font-weight: 800; color: var(--primary); line-height: 1.1; }
+        .metric-label { font-size: 11px; color: #94a3b8; margin-top: 4px; line-height: 1.4; }
+        .callout-box { background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border: 1px solid #7dd3fc; border-radius: 10px; padding: 16px 20px; margin: 16px 0; }
+        .callout-box h3 { font-size: 13px; color: #0c4a6e; margin-bottom: 4px; }
+        .callout-box p { font-size: 11.5px; color: #0e4f6e; margin-bottom: 0; line-height: 1.6; }
+        .config-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 22px; margin-bottom: 14px; }
+        .config-card h3 { font-size: 14px; margin-bottom: 6px; }
+        .config-card ul { margin: 6px 0 0 16px; padding: 0; }
+        .config-card ul li { font-size: 12px; color: #475569; margin-bottom: 4px; line-height: 1.5; }
+        .confirm-item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 12px; color: #374151; }
+        .confirm-item:last-child { border-bottom: none; }
+        .confirm-check { width: 18px; height: 18px; border: 2px solid #cbd5e1; border-radius: 4px; flex-shrink: 0; margin-top: 1px; }
+        .page-footer { position: absolute; bottom: 30px; left: 1.0in; right: 1.0in; display: flex; justify-content: space-between; font-size: 9px; color: #94a3b8; }
+        .pricing-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+        .pricing-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px 22px; text-align: center; }
+        .pricing-card.recommended { border-color: var(--primary); border-width: 2px; position: relative; }
+        .pricing-card .badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; font-size: 10px; font-weight: 700; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; }
+        .pricing-card h3 { font-size: 15px; }
+        .price { font-size: 38px; font-weight: 800; color: #0a0a1a; margin: 10px 0; }
+        .price span { font-size: 14px; font-weight: 500; color: #64748b; }
+        .pricing-card ul { list-style: none; margin: 10px 0; padding: 0; text-align: left; }
+        .pricing-card ul li { font-size: 12px; color: #475569; margin-bottom: 5px; line-height: 1.5; }
+        .cta-button { display: inline-block; background: white; color: #0a0a1a; font-size: 15px; font-weight: 700; padding: 14px 40px; border-radius: 50px; text-decoration: none; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <!-- PAGE 1: COVER -->
+    <div class="page cover">
+        <div class="cover-logo">CHARLIE AI</div>
+        <h1>Implementation Plan<br>for <span>High Ticket Sales Academy</span></h1>
+        <div class="cover-subtitle">Your personalized AI setter deployment — built to convert more leads, increase show rates, and scale your sales team.</div>
+        <div class="cover-meta">
+            <strong>Prepared For:</strong> Christian Cherniawski<br>
+            <strong>Prepared By:</strong> Drew Millington, Chief Commercial Officer<br>
+            <strong>Date:</strong> March 11, 2026
+        </div>
+        <div class="cover-bar"></div>
+    </div>
+
+    <!-- PAGE 2: YOUR BUSINESS AT A GLANCE -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Implementation Plan</div>
+            </div>
+
+            <h2>Your Business at a <span>Glance</span></h2>
+            <div class="section-subtitle">Here's what we captured from our conversation — a summary of your current operations.</div>
+
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-label">Business</div>
+                    <div class="info-value">High Ticket Sales Academy</div>
+                    <div class="info-value-sm">Training and placing elite closers in high-ticket roles.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Point of Contact</div>
+                    <div class="info-value">Christian Cherniawski</div>
+                    <div class="info-value-sm">Co-founder, from Michigan.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Offer Structure</div>
+                    <div class="info-value">Free Training VSL → Closer Call</div>
+                    <div class="info-value-sm">Leads opt-in for a VSL, then have the option to book a call. Those who don't are pursued by a team of setters.</div>
+                </div>
+                 <div class="info-card">
+                    <div class="info-label">Lead Volume</div>
+                    <div class="info-value">~2,000 Leads / Month</div>
+                    <div class="info-value-sm">Signing up 30-40 new members per month from this volume.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Current Team</div>
+                    <div class="info-value">4 Setters, 4 Closers</div>
+                    <div class="info-value-sm">Setters work a fixed schedule: Monday-Friday, 10 AM - 6 PM ET.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Key Metric: Show Rate</div>
+                    <div class="info-value">55-60%</div>
+                    <div class="info-value-sm">A significant opportunity for immediate lift by 15-25 points.</div>
+                </div>
+                 <div class="info-card full-width">
+                    <div class="info-label">CRM & Tools</div>
+                    <div class="info-value">HubSpot</div>
+                    <div class="info-value-sm">Currently using HubSpot for CRM, with some static text automations that achieve a ~40% response rate. A2P is likely set up. Charlie integrates natively.</div>
+                </div>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for High Ticket Sales Academy</span>
+        </div>
+    </div>
+
+    <!-- PAGE 3: WHAT WE HEARD -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Discovery Summary</div>
+            </div>
+
+            <h2>The <span>Opportunities</span> We Found</h2>
+            <div class="section-subtitle">The key challenges in your current workflow and how we'll solve them.</div>
+
+            <div class="detail-card">
+                <h3>The "10-to-6" Problem</h3>
+                <p>Your setters work 10 AM to 6 PM, but your leads come in 24/7. Any lead generated outside business hours sits cold until the next day, killing the speed-to-lead advantage. Charlie works around the clock, engaging every lead within 60 seconds, ensuring you never lose momentum.</p>
+            </div>
+            
+            <div class="detail-card">
+                <h3>The 40% No-Show Rate</h3>
+                <p>A 55-60% show rate is average, but it means 4 out of 10 qualified prospects are never spoken to. That's a massive leak in the funnel. Our 7-step show rate sequence, which impersonates the closer, consistently pushes show rates to 70-80% for our clients.</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>The "Maybe" Pipeline</h3>
+                <p>Your setters call leads 6-10 times, but then what? As you said, it "doesn't always happen" consistently. This creates a huge pipeline of "maybes" — leads that weren't a hard "no" but were never fully worked. Charlie's core philosophy is to **follow up forever** with data-driven persistence until a yes or no is received, turning that "maybe" pipeline into revenue.</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>The Untapped Goldmine</h3>
+                <p>You admitted to doing "very little" with old leads and having only a manual referral process. Your database of past prospects is a goldmine. Charlie can reactivate them with contextually relevant messages and automate referral requests from happy customers, creating two new, powerful lead channels.</p>
+            </div>
+
+            <div class="client-quote">
+                <p>Our human setters work Monday through Friday, like, 10 a.m. to 6. And then there's just so much that doesn't happen between those hours, that we know there's room for improvements.</p>
+                <p class="quote-attr">— Christian Cherniawski, Discovery Call</p>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for High Ticket Sales Academy</span>
+        </div>
+    </div>
+
+    <!-- PAGE 4: THE CHARLIE DIFFERENCE -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Our Technology</div>
+            </div>
+
+            <h2>Why Charlie is <span>Different</span></h2>
+            <div class="section-subtitle">You've evaluated other platforms. Here’s why they "still suck" and Charlie doesn't.</div>
+
+            <p class="intro-text">You mentioned other platforms feel like AI support agents you have to force into a sales role. Charlie was built from the ground up for one purpose: to be an elite sales development AI. This is powered by our "Four Judges" system, which ensures every single message is on-brand, intelligent, and effective.</p>
+
+            <div class="setter-card">
+                <h3>The Four Judges: How Charlie Stays On-Brand & In Control</h3>
+                <p style="margin-bottom: 15px;">Before Charlie sends any message, it's reviewed by four specialized AIs that act as an internal quality control council. This prevents the "hallucinations" and off-brand comments common in other platforms.</p>
+                <ul>
+                    <li><strong>Judge 1: Prospect Congruence</strong> — Mirrors the prospect’s tone and communication style to build rapport.</li>
+                    <li><strong>Judge 2: Your Feedback</strong> — Learns from every piece of feedback you provide. If you like a response, it does more of it. If you don't, it never makes that mistake again.</li>
+                    <li><strong>Judge 3: Conversational Stage</strong> — Understands where it is in the sales process. It knows when to build rapport, when to dig for pain, and when to ask for the meeting.</li>
+                    <li><strong>Judge 4: Your Instructions</strong> — Obeys your specific rules. If you tell Charlie "don't accept surface-level answers," it will politely re-ask questions until it gets the information it needs.</li>
+                </ul>
+            </div>
+
+            <div class="detail-card">
+                <h3>Human-Like Nuance</h3>
+                <p>Simple AI bots break when faced with real human conversation. If a prospect says, "I'm at work, message me later," most bots fail. Charlie understands, sets a reminder, and re-engages at 5 PM. It's these "little shavings," as Drew said, that add up to a truly intelligent and effective conversational experience.</p>
+            </div>
+             <div class="detail-card">
+                <h3>Native HubSpot Integration</h3>
+                <p>Charlie works inside the CRM you already use. All conversations, notes, prospect goals, and hurdles are automatically synced to the deal card in HubSpot, giving your closers perfect context for every call.</p>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for High Ticket Sales Academy</span>
+        </div>
+    </div>
+
+    <!-- PAGE 5: YOUR AI SETTERS -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Your AI Team</div>
+            </div>
+
+            <h2>What We're <span>Building</span> for You</h2>
+            <div class="section-subtitle">A phased deployment, starting with your highest-impact opportunities.</div>
+
+            <p class="intro-text" style="margin-bottom: 18px; font-weight: 600; color: #0a0a1a; font-size: 15px;">Phase 1: Foundation & Quick Wins</p>
+            
+            <div class="setter-card">
+                <h3>💬 VSL Follow-Up Agent</h3>
+                <p>This agent replaces your static text automations. It works 24/7, engaging every lead who opts in for your VSL but doesn't book. It uses your proven scripts and the gap-selling method to uncover their goals and hurdles, then books qualified prospects directly onto your closers' calendars. It follows up forever, ensuring no lead is left behind.</p>
+            </div>
+
+            <div class="setter-card">
+                <h3>📈 Call Show Rate Agent</h3>
+                <p>Your biggest immediate revenue lift. 5 minutes after a call is booked in HubSpot, this agent texts the prospect, impersonating the closer. It runs a 7-step nurture sequence to confirm the appointment, set expectations, share pre-call materials, and build rapport. This pushes the show rate from 55-60% to a target of 70-80%.</p>
+            </div>
+
+            <p class="intro-text" style="margin-top: 30px; margin-bottom: 18px; font-weight: 600; color: #0a0a1a; font-size: 15px;">Phase 2: Scale & Monetize</p>
+
+            <div class="setter-card">
+                <h3>♻️ Database Reactivation Agent</h3>
+                <p>Charlie will systematically work your database of old leads. It pulls the prospect's original goal from a HubSpot custom field and re-engages them with perfect context. Example: "Hey Mike, you spoke to my colleague a few months ago. At the time, you were looking to make six figures... have you landed that high-ticket job yet?"</p>
+            </div>
+            
+            <div class="setter-card">
+                <h3>🔄 Automated Referral Agent</h3>
+                <p>This agent automates your manual referral process. It reaches out to successful students, asks for feedback (NPS score), and prompts them to refer friends or colleagues who would also be a good fit, creating a consistent stream of high-quality, warm leads.</p>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for High Ticket Sales Academy</span>
+        </div>
+    </div>
+
+    <!-- PAGE 6: IMPLEMENTATION ROADMAP -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Implementation Roadmap</div>
+            </div>
+
+            <h2>Your 1-Week <span>Launch Plan</span></h2>
+            <div class="section-subtitle">From kickoff to live deployment in just five days.</div>
+
+            <div class="phase-card">
+                <div class="phase-label">Day 1: Monday</div>
+                <h3>Kickoff & Build (1 Hour)</h3>
+                <p>We'll officially start, digest the assets you've sent (VSL, scripts, successful conversations), and build your first two agents (VSL Follow-Up & Show Rate) live on the call.</p>
+            </div>
+            <div class="phase-card">
+                <div class="phase-label">Day 2: Tuesday</div>
+                <h3>Roleplay & Refine (1 Hour)</h3>
+                <p>We'll start "sparring" with Charlie in the playground, acting as prospects and giving real-time feedback to hone his responses and conversational flow.</p>
+            </div>
+            <div class="phase-card">
+                <div class="phase-label">Days 3-4: Wednesday & Thursday</div>
+                <h3>Advanced Sparring (30 Mins Each Day)</h3>
+                <p>We'll continue to refine the agents, testing edge cases and ensuring Charlie handles every scenario perfectly according to your brand voice.</p>
+            </div>
+            <div class="phase-card">
+                <div class="phase-label">Day 5: Friday</div>
+                <h3>Final Testing & Deployment</h3>
+                <p>By Friday, Charlie will be performing at a high level. We'll run final tests on the HubSpot integration and booking links, then set your first agents live.</p>
+            </div>
+             <div class="callout-box">
+                <h3>Ongoing Support & Enablement</h3>
+                <p>The first five agent builds are fully managed by our team. Throughout this process, we'll be showing you exactly how it's done. Most of our clients are fully self-sufficient after 90 days, able to clone and deploy new agents on their own. But we're always here to help.</p>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for High Ticket Sales Academy</span>
+        </div>
+    </div>
+
+    <!-- PAGE 7: INVESTMENT & NEXT STEPS -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Investment</div>
+            </div>
+
+            <h2>Your <span>Investment</span></h2>
+            <div class="section-subtitle">Pricing includes your reseller discount. Choose the plan that works best for you.</div>
+            
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <h3>Monthly</h3>
+                    <div class="price">$2,250<span>/mo</span></div>
+                    <ul>
+                        <li>Standard pricing with 25% reseller discount.</li>
+                    </ul>
+                </div>
+                <div class="pricing-card recommended">
+                    <div class="badge">Recommended</div>
+                    <h3>Quarterly</h3>
+                    <div class="price">$2,025<span>/mo</span></div>
+                     <ul>
+                        <li>Includes 25% reseller discount + additional 10% discount for quarterly payment.</li>
+                    </ul>
+                </div>
+                <div class="pricing-card">
+                    <h3>Annually</h3>
+                    <div class="price">$1,800<span>/mo</span></div>
+                     <ul>
+                        <li>Includes 25% reseller discount + additional 20% discount for annual payment.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="config-card" style="margin-top: 20px;">
+                <h3>What's Included in Every Plan:</h3>
+                <ul>
+                    <li><strong>5 Fully Managed AI Agent Builds</strong> — Our team will build, deploy, and optimize your first five agents with you.</li>
+                    <li><strong>5,000 AI Messages per Month</strong> — Sufficient for your current lead volume of ~2,000/mo. (Overage at $0.05/message).</li>
+                    <li><strong>Native HubSpot Integration</strong> — Seamlessly syncs all data and conversations.</li>
+                    <li><strong>All Written Channels</strong> — SMS, iMessage, Facebook DM, Instagram DM, WhatsApp, and Website Live Chat.</li>
+                    <li><strong>Ongoing Training & Support</strong> — We'll enable your team to become self-sufficient Charlie experts.</li>
+                    <li><strong>Voice Add-On (Optional):</strong> $500/month. (We recommend starting with the written channels first).</li>
+                </ul>
+            </div>
+             <div class="callout-box">
+                <h3>Next Steps</h3>
+                <p>Christian, you mentioned presenting this to your team next week and potentially moving forward by the end of the month. The next step is to book the official kickoff call. Use the link on the final page to get it on the calendar.</p>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for High Ticket Sales Academy</span>
+        </div>
+    </div>
+    
+    <!-- PAGE 8: NEXT STEPS CTA -->
+    <div class="page" style="background: linear-gradient(135deg, #050507 0%, #0a0a1a 40%, #0d1528 100%); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2in 1.2in; margin: 0 auto;">
+        <div class="cover-logo" style="margin-bottom: 50px;">CHARLIE AI</div>
+        <h2 style="color: white; font-size: 36px; margin-bottom: 16px;">Ready to build your<br>AI sales team?</h2>
+        <p style="color: #94a3b8; font-size: 15px; max-width: 450px; margin-bottom: 40px;">If everything looks good, the next step is booking your kickoff call. We'll configure Charlie together and have your first agents live and booking calls within a week.</p>
+        <a href="https://calendly.com/drew-charlie/30min" class="cta-button">Book Your Kickoff Call →</a>
+        <div style="margin-top: 50px;">
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 6px;"><a href="https://charlieai.io" style="color: #834CD2; text-decoration: none;">charlieai.io</a> · <a href="mailto:drew@systemsbyai.com" style="color: #834CD2; text-decoration: none;">drew@systemsbyai.com</a></p>
+        </div>
+        <div class="cover-bar"></div>
+    </div>
+
+</body>
+</html>
