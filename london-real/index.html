@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Implementation Plan — London Real</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --primary: #DC2626; --primary-dark: #B91C1C; }
+        @page { size: letter; margin: 0; }
+        body { font-family: 'Inter', -apple-system, sans-serif; color: #1a1a2e; line-height: 1.6; background: #f1f5f9; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .page { width: 8.5in; min-height: 11in; padding: 0; page-break-after: always; position: relative; overflow: hidden; margin: 0 auto; background: white; }
+        .page:last-child { page-break-after: auto; }
+        @media print { body { background: white; } .page { page-break-after: always !important; page-break-inside: avoid !important; height: 11in !important; overflow: hidden !important; } .page:last-child { page-break-after: auto !important; } h2, h3, .section-subtitle { break-after: avoid; page-break-after: avoid; orphans: 3; widows: 3; } .info-card, .detail-card, .phase-card, .setter-card, .config-card { break-inside: avoid; page-break-inside: avoid; } }
+        .cover { background: linear-gradient(135deg, #050507 0%, #0a0a1a 40%, #1a0a0a 100%); color: white; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: 3in 1.2in; position: relative; }
+        .cover::before { content: ''; position: absolute; top: -20%; right: -10%; width: 60%; height: 80%; background: radial-gradient(ellipse, rgba(220, 38, 38, 0.06), transparent 70%); border-radius: 50%; }
+        .cover-logo { font-size: 14px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; color: var(--primary); margin-bottom: 40px; position: relative; z-index: 1; }
+        .cover h1 { font-size: 42px; font-weight: 800; line-height: 1.15; margin-bottom: 20px; position: relative; z-index: 1; }
+        .cover h1 span { color: var(--primary); }
+        .cover-subtitle { font-size: 18px; color: #94a3b8; font-weight: 400; margin-bottom: 60px; position: relative; z-index: 1; }
+        .cover-meta { position: relative; z-index: 1; font-size: 13px; color: #64748b; line-height: 2; }
+        .cover-meta strong { color: #94a3b8; }
+        .cover-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--primary), var(--primary-dark)); }
+        .content { padding: 0.8in 1.0in; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid #e2e8f0; margin-bottom: 30px; }
+        .page-header-logo { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--primary); }
+        .page-header-title { font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+        h2 { font-size: 24px; font-weight: 800; color: #0a0a1a; margin-bottom: 6px; }
+        h2 span { color: var(--primary); }
+        .section-subtitle { font-size: 13px; color: #64748b; margin-bottom: 24px; }
+        h3 { font-size: 16px; font-weight: 700; color: #0a0a1a; margin-bottom: 6px; }
+        p { font-size: 12.5px; color: #374151; margin-bottom: 12px; }
+        .intro-text { font-size: 13.5px; color: #374151; line-height: 1.8; margin-bottom: 25px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+        .info-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 20px; }
+        .info-card.full-width { grid-column: 1 / -1; }
+        .info-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); margin-bottom: 4px; }
+        .info-value { font-size: 14px; font-weight: 600; color: #0a0a1a; line-height: 1.4; }
+        .info-value-sm { font-size: 12px; font-weight: 400; color: #475569; line-height: 1.6; }
+        .detail-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 22px; margin-bottom: 14px; }
+        .detail-card h3 { font-size: 14px; display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+        .detail-card p { font-size: 12px; color: #475569; margin-bottom: 0; line-height: 1.6; }
+        .client-quote { background: linear-gradient(135deg, #050507, #1a0a0a); border-radius: 12px; padding: 22px 26px; margin: 20px 0; position: relative; }
+        .client-quote::before { content: '\201C'; font-size: 48px; font-weight: 800; color: var(--primary); position: absolute; top: 8px; left: 18px; opacity: 0.5; }
+        .client-quote p { color: #e2e8f0; font-size: 13px; font-style: italic; line-height: 1.7; margin-bottom: 0; padding-left: 20px; }
+        .client-quote .quote-attr { color: #94a3b8; font-size: 11px; font-style: normal; margin-top: 8px; padding-left: 20px; }
+        .setter-card { background: linear-gradient(135deg, #fef2f2, #fee2e2); border: 1px solid #fca5a5; border-radius: 10px; padding: 18px 22px; margin-bottom: 14px; }
+        .setter-card h3 { font-size: 14px; color: var(--primary-dark); margin-bottom: 4px; }
+        .setter-card p { font-size: 12px; color: #7f1d1d; margin-bottom: 0; line-height: 1.6; }
+        .setter-card .setter-detail { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .setter-tag { background: rgba(220, 38, 38, 0.12); color: var(--primary-dark); font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+        .phase-card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px 22px; margin-bottom: 14px; border-left: 4px solid var(--primary); }
+        .phase-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--primary); margin-bottom: 4px; }
+        .phase-card h3 { font-size: 15px; margin-bottom: 6px; }
+        .phase-card ul { margin: 6px 0 0 16px; padding: 0; }
+        .phase-card ul li { font-size: 12px; color: #475569; margin-bottom: 3px; line-height: 1.5; }
+        .metrics-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-top: 20px; }
+        .metric-card { background: linear-gradient(135deg, #050507, #1a0a0a); color: white; border-radius: 12px; padding: 20px; text-align: center; }
+        .metric-number { font-size: 32px; font-weight: 800; color: var(--primary); line-height: 1.1; }
+        .metric-label { font-size: 11px; color: #94a3b8; margin-top: 4px; line-height: 1.4; }
+        .callout-box { background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border: 1px solid #7dd3fc; border-radius: 10px; padding: 16px 20px; margin: 16px 0; }
+        .callout-box h3 { font-size: 13px; color: #0c4a6e; margin-bottom: 4px; }
+        .callout-box p { font-size: 11.5px; color: #0e4f6e; margin-bottom: 0; line-height: 1.6; }
+        .config-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 22px; margin-bottom: 14px; }
+        .config-card h3 { font-size: 14px; margin-bottom: 6px; }
+        .config-card ul { margin: 6px 0 0 16px; padding: 0; }
+        .config-card ul li { font-size: 12px; color: #475569; margin-bottom: 4px; line-height: 1.5; }
+        .confirm-item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 12px; color: #374151; }
+        .confirm-item:last-child { border-bottom: none; }
+        .confirm-check { width: 18px; height: 18px; border: 2px solid #cbd5e1; border-radius: 4px; flex-shrink: 0; margin-top: 1px; }
+        .page-footer { position: absolute; bottom: 30px; left: 1.0in; right: 1.0in; display: flex; justify-content: space-between; font-size: 9px; color: #94a3b8; }
+    </style>
+</head>
+<body>
+
+    <!-- PAGE 1: COVER -->
+    <div class="page cover">
+        <div class="cover-logo">CHARLIE AI</div>
+        <h1>Implementation Plan<br>for <span>London Real</span></h1>
+        <div class="cover-subtitle">Two-track deployment — unlock cold traffic with AI while extracting maximum value from your existing audience.</div>
+        <div class="cover-meta">
+            <strong>Prepared:</strong> March 12, 2026
+        </div>
+        <div class="cover-bar"></div>
+    </div>
+
+    <!-- PAGE 2: YOUR BUSINESS AT A GLANCE -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Implementation Plan</div>
+            </div>
+
+            <h2>Your Business at a <span>Glance</span></h2>
+            <div class="section-subtitle">Here's what we captured from our conversations — please confirm everything looks right.</div>
+
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-label">Business</div>
+                    <div class="info-value">London Real</div>
+                    <div class="info-value-sm">Major UK podcast (~15 years). Think Joe Rogan but London. Guests include Jocko Willink, Jordan Peterson, and similar caliber. Founded and hosted by Brian Rose — American, dual citizen, ex-Wall Street banker who jacked it all in to build media.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Point of Contact</div>
+                    <div class="info-value">JB</div>
+                    <div class="info-value-sm">London Real team. Working with Cole Gordon / Closers.io — Sue recommended Charlie after seeing the team at an event. Just brought on a closer from Closers.io.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Current Product</div>
+                    <div class="info-value">Dubai Real Estate Transformations</div>
+                    <div class="info-value-sm">$10,000 to join + $10,000 minimum capital into deals = $20K liquid required. Brian spotted the opportunity while spending time in Dubai. Deals typically mature in 12 months. Counterbalances crypto (which is cyclical). 32 people closed so far.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Product History</div>
+                    <div class="info-value">Course → Crypto → Real Estate</div>
+                    <div class="info-value-sm">Previously: business course, podcasting course, public speaking course, life skills course. Then pivoted hard into crypto/DeFi (natural with Brian's finance background). Dubai real estate is the newest and currently easiest to sell.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Lead Volume</div>
+                    <div class="info-value">~1,000/mo</div>
+                    <div class="info-value-sm">Well within Charlie's 5,000 AI reply cap. No overage concerns. Mix of warm list, Meta paid ads, lead ads, evergreen masterclasses, and genuinely live masterclasses 1–2x/week.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Show Rate</div>
+                    <div class="info-value">30–50% (Volatile)</div>
+                    <div class="info-value-sm">Dropped to ~30% when running lead ads to cold audiences. Back to ~50% after culling those campaigns. Cold lead ads brought tons of leads and bookings but terrible show rate — "just vanity." Currently need to double the show rate.</div>
+                </div>
+                <div class="info-card full-width">
+                    <div class="info-label">Global Audience — Unique Challenge</div>
+                    <div class="info-value-sm">Buyer cohort is far more global than typical. US is underrepresented for the Dubai product — buyers from Panama, Peru, UK, Europe, and everywhere. This is unusual: historically their courses were US-heavy, but Dubai real estate attracts a worldwide audience. Countries without great domestic real estate markets are especially drawn to it. This has implications for channel strategy (WhatsApp vs SMS), phone number localization, and qualification (global income levels, currencies).</div>
+                </div>
+                <div class="info-card full-width">
+                    <div class="info-label">The Big List — Massive Warm Asset</div>
+                    <div class="info-value-sm">London Real has built a huge email list over 15 years by offering podcast episodes for free — sign in with email to watch. Viewers discover one guest, go down the rabbit hole, watch dozens more. Deep rapport and brand recognition. Thousands (potentially tens of thousands) of contacts with phone numbers who know London Real but may not know about the Dubai real estate product. Prime reactivation/awareness opportunity for Charlie.</div>
+                </div>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for London Real</span>
+        </div>
+    </div>
+
+    <!-- PAGE 3: BUSINESS AT A GLANCE (CONTINUED) -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Implementation Plan (continued)</div>
+            </div>
+
+            <h2>Your Business at a <span>Glance</span> (cont.)</h2>
+            <div class="section-subtitle">Current tech stack, channels, and funnel architecture</div>
+
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-label">CRM</div>
+                    <div class="info-value">ActiveCampaign</div>
+                    <div class="info-value-sm">All lead management, deal tracking, and email automation runs through ActiveCampaign. Charlie integrates with ActiveCampaign — moves deals, updates contact statuses, triggers agents based on pipeline stages.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Current Phone / SMS</div>
+                    <div class="info-value">JustCall</div>
+                    <div class="info-value-sm">Plugs into ActiveCampaign — team can message, dial, and use power dialers from within AC. Also using Dialer.io for outbound. Current outreach described as "cluttered and slightly clumsy" — SMS chains from multiple sources overlapping.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Recommended: Link</div>
+                    <div class="info-value">$500 setup + $250/mo per line</div>
+                    <div class="info-value-sm">A2P registration built in (London Real has struggled to get A2P — critical for US SMS). iMessage automatic (50 new leads/day via blue bubble). No messaging fees. Anti-spam compliance built in — Link won't let you mass blast, which protects sender reputation.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Channel Strategy</div>
+                    <div class="info-value">WhatsApp + SMS Double-Tap</div>
+                    <div class="info-value-sm">North America: SMS/iMessage via Link. International: WhatsApp (existing Meta WhatsApp account). Charlie reaches out on both, asks which channel they prefer, then sticks to that one. London Real has been flagged/banned on WhatsApp before — Charlie plays by the rules (persistent but professional, not spammy).</div>
+                </div>
+                <div class="info-card full-width">
+                    <div class="info-label">Current Funnel</div>
+                    <div class="info-value-sm">Multiple entry points: (1) Main landing page — warm traffic from email list → apply → book call. (2) Meta paid ads → landing page → apply → book. (3) Meta lead ads — pre-populated form, super low friction, tons of leads but low show rate. (4) Evergreen masterclass replays (reskinned landing page). (5) Live masterclasses 1–2x/week. All routes funnel to: application → book a call → sales team. Current automation: 10 minutes after application, checks if they've booked — if not, triggers autoresponder email chain. Minimal qualification in application form (Closers.io wants more). One sales person just hired from Closers.io.</div>
+                </div>
+                <div class="info-card full-width">
+                    <div class="info-label">What Charlie Doesn't Do (Today)</div>
+                    <div class="info-value-sm">Email. Charlie communicates via SMS, iMessage, WhatsApp, Facebook DM, Instagram DM, website live chat, and voice (phone). Email is the one gap — but 96% of people open messages from unknown senders vs. only 11% who answer unknown phone calls. For London Real's global audience, WhatsApp + SMS covers the vast majority of effective touchpoints.</div>
+                </div>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for London Real</span>
+        </div>
+    </div>
+
+    <!-- PAGE 4: WHAT WE HEARD -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Discovery Summary</div>
+            </div>
+
+            <h2>What We <span>Heard</span></h2>
+            <div class="section-subtitle">Key challenges and opportunities from our conversations</div>
+
+            <div class="detail-card">
+                <h3>🥶 Unlocking Cold Is the Only Way This Scales</h3>
+                <p>JB's own words: "Unlocking cold is really interesting. For me, it's the only way that this really scales — run campaigns to people that never heard of us and then nurture them." The warm list converts but has a ceiling. Cold Meta ads bring volume but terrible show rates (~30%). Charlie bridges this gap — turning cold opt-ins into qualified, prepped, high-show-rate calls through persistent, professional, conversational follow-up.</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>📉 Show Rate Is the Bleeding Wound</h3>
+                <p>Show rate has been volatile — 30% on cold lead ads, ~50% on warmer traffic. JB culled the cold lead ads because the volume was "just vanity." Charlie's show rate agents (closer impersonation, 7-step post-booking sequence, social proof + scarcity) consistently deliver 70–80% show rates as a floor on cold, non-organic, hard-CTA campaigns across hundreds of clients. This is the single biggest ROI lever.</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>💀 1,000+ Dead Leads Sitting in ActiveCampaign</h3>
+                <p>Approximately 1,000 people who booked but never showed, plus a massive list of podcast subscribers with phone numbers who know London Real but don't know about the Dubai product. These are prime reactivation targets. Charlie can personalize every follow-up using stored context — "Last time you were interested in deploying capital in Dubai real estate. For whatever reason, it wasn't a good fit. Have you been able to lock down that investment?"</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>🌍 Global Audience = Channel Complexity</h3>
+                <p>Panama to Peru to UK to Dubai. WhatsApp is dominant internationally; SMS/iMessage for North America. Current outreach is "cluttered and slightly clumsy" with overlapping SMS chains. Charlie simplifies this: reach out on both channels, ask preference, stick to one. Professional and persistent without getting flagged — critical given London Real's history of WhatsApp bans from aggressive messaging.</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>💰 $20K Liquid Requirement = Qualification Matters</h3>
+                <p>$10K to join + $10K minimum investment. Charlie can qualify conversationally — "What do you do for work?" If they're a CTO at a tech company, fast-track to call. If income signals are low, Charlie can be direct: "Just so you know, the program is $10,000 up front plus a $10,000 minimum investment — is that palatable?" Filters out unqualified leads before they burn closer time. Can also upload job title data for automatic qualification.</p>
+            </div>
+
+            <div class="client-quote">
+                <p>Unlocking cold is really interesting. I think it's the only way that this really scales — run campaigns to people that never heard of us and then nurture them in a way like this.</p>
+                <p class="quote-attr">— JB, London Real</p>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for London Real</span>
+        </div>
+    </div>
+
+    <!-- PAGE 5: THE TWO-TRACK PLAN — TRACK 1 -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Your AI Setters</div>
+            </div>
+
+            <h2>The Two-Track <span>Plan</span></h2>
+            <div class="section-subtitle">Generate revenue immediately while building the cold traffic engine in parallel</div>
+
+            <p class="intro-text" style="margin-bottom: 18px; font-weight: 600; color: #0a0a1a; font-size: 15px;">Track 1 — Existing Funnel: More Juice from the Squeeze</p>
+            <p class="intro-text" style="margin-top: 0;">These agents work on your existing funnel and dead leads immediately. Two goals: (1) Generate ROI fast — ideally Charlie pays for his entire annual license in the first reactivation campaign, if not 10x that. (2) Train Charlie in a low-risk environment so he's battle-tested before touching cold top-of-funnel leads.</p>
+
+            <div class="setter-card">
+                <h3>🎯 Reactivation Agent</h3>
+                <p>Hits the ~1,000+ dead leads and no-shows in ActiveCampaign, plus the massive podcast subscriber list who have phone numbers but don't know about the Dubai product. Charlie personalizes every touchpoint using stored context. "Hey JB, it's Drew here — you spoke to my colleague Dan a couple months ago. At the time you were looking to deploy capital in Dubai real estate. For whatever reason, it wasn't a good fit. Just curious, have you been able to lock down that investment?" Follow-up frequency fully customizable — weekly, monthly, quarterly. Health/fitness/real estate reactivation is "down to a science."</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">1,000+ Dead Leads</span>
+                    <span class="setter-tag">Podcast Subscriber List</span>
+                    <span class="setter-tag">Context Memory</span>
+                    <span class="setter-tag">Gap Selling</span>
+                    <span class="setter-tag">Custom Frequency</span>
+                    <span class="setter-tag">AC Deal Updates</span>
+                </div>
+            </div>
+
+            <div class="setter-card">
+                <h3>🚫 Cancellation Rebooking Agent</h3>
+                <p>When a prospect cancels their strategy call, Charlie reaches out immediately via their preferred channel (WhatsApp or SMS). Quick, professional, removes friction, gets them rescheduled. Every cancellation that would have gone dead is brought back to life. Specialized talk track — different from no-show agent.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">Cancellation Detection</span>
+                    <span class="setter-tag">WhatsApp / SMS</span>
+                    <span class="setter-tag">Immediate Outreach</span>
+                    <span class="setter-tag">Rescheduling</span>
+                </div>
+            </div>
+
+            <div class="setter-card">
+                <h3>📞 No-Show Rebooking Agent</h3>
+                <p>When someone doesn't show, Charlie follows up within minutes. Non-judgmental, professional — especially important given the global, high-net-worth audience. "Life happens" approach with an easy path to rebook. If they don't rebook, they're moved to dead for future reactivation campaigns. Different talk track from cancellation agent.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">No-Show Detection</span>
+                    <span class="setter-tag">Quick Follow-up</span>
+                    <span class="setter-tag">Professional Tone</span>
+                    <span class="setter-tag">Rebook or Reactivate</span>
+                </div>
+            </div>
+
+            <div class="callout-box">
+                <h3>🧪 Why Start Here (Not Top of Funnel)</h3>
+                <p>Two reasons: (1) If Charlie starts on cold traffic day one, despite training, he will burn some leads. That looks bad — and you'd rightfully question the investment. Starting with dead leads means if Charlie burns a dead lead, who cares? (2) Dead leads and no-shows generate real questions and objections ("Has the offer changed?" "What do you offer?" "Who will I meet?"). This builds Charlie's knowledge base and objection handling in a live environment — so when he hits cold leads, he's already battle-tested. Low risk, high reward.</p>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for London Real</span>
+        </div>
+    </div>
+
+    <!-- PAGE 6: TRACK 2 — COLD TRAFFIC ENGINE -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Your AI Setters (continued)</div>
+            </div>
+
+            <p class="intro-text" style="margin-bottom: 18px; font-weight: 600; color: #0a0a1a; font-size: 15px;">Track 2 — Cold Traffic Engine (In Parallel)</p>
+            <p class="intro-text" style="margin-top: 0;">While Track 1 generates revenue and trains Charlie, we build the cold traffic funnel in parallel. JB's plan: isolate Charlie on cold traffic with a firewall — cold leads don't get the usual email chains. Clean test of whether Charlie can unlock cold at scale.</p>
+
+            <div class="setter-card">
+                <h3>🎯 Top of Funnel Setter (Cold Traffic)</h3>
+                <p>The main growth engine. Cold leads opt in from Meta ads → Charlie reaches out within 60 seconds via WhatsApp or SMS. Full gap-selling conversation: "What makes you interested in Dubai real estate?" → surfaces their goal → "What's been the main hurdle?" → once they articulate why they need help, that's magic hour — most sets happen within 5 minutes of getting the hurdle. Charlie follows up until they book or die, but does so professionally to avoid WhatsApp flags. Qualifies conversationally: "What do you do for work?" + direct qualification on $20K liquidity requirement.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">Cold Meta Leads</span>
+                    <span class="setter-tag">60-Second Response</span>
+                    <span class="setter-tag">Gap Selling</span>
+                    <span class="setter-tag">Conversational Qualification</span>
+                    <span class="setter-tag">$20K Liquidity Check</span>
+                    <span class="setter-tag">WhatsApp + SMS</span>
+                    <span class="setter-tag">Buy or Die Follow-up</span>
+                </div>
+            </div>
+
+            <div class="setter-card">
+                <h3>📈 Show Rate Agent (7-Step Post-Booking Sequence)</h3>
+                <p>Five minutes after Charlie books a call, a separate agent reaches out impersonating the closer: "Hey JB, it's Drew here, London Real. Saw your appointment come through — looking forward to our call. Just a heads up, we don't allow rescheduling if you miss the call." Authority + scarcity. Then: drop the VSL, check if they've watched it, send case studies, timed reminders. Seven specialized touchpoints between booking and call. This is how we get from 30% show rate to 70–80% on cold traffic. The biggest single ROI lever in this entire deployment.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">7-Step Sequence</span>
+                    <span class="setter-tag">Closer Impersonation</span>
+                    <span class="setter-tag">5 Min Post-Booking</span>
+                    <span class="setter-tag">VSL / Case Study Send</span>
+                    <span class="setter-tag">Authority + Scarcity</span>
+                    <span class="setter-tag">Pre-Call Qualification</span>
+                    <span class="setter-tag">70–80% Show Rate Floor</span>
+                </div>
+            </div>
+
+            <div class="metrics-grid" style="margin-top: 16px;">
+                <div class="metric-card">
+                    <div class="metric-number">30%+</div>
+                    <div class="metric-label">Intro response rate<br>(minimum floor)</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number">20-25%</div>
+                    <div class="metric-label">Lead-to-call<br>target rate</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number">70-80%</div>
+                    <div class="metric-label">Show rate<br>(with Charlie's setter)</div>
+                </div>
+            </div>
+
+            <div class="callout-box">
+                <h3>📊 Performance Benchmarks</h3>
+                <p>For every 100 cold leads: Charlie talks to 30%+ → qualifies and books 15%+ → 5–10 on a call → 70–80% show rate. These are minimums — with London Real's brand recognition (even on cold, Brian's name carries weight), expect significantly higher intro response rates. We optimize intro response rate first, then book rate, then show rate — in that order.</p>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for London Real</span>
+        </div>
+    </div>
+
+    <!-- PAGE 7: CONFIGURATION & CHANNEL ARCHITECTURE -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Configuration Details</div>
+            </div>
+
+            <h2>How We'll <span>Configure</span> Charlie</h2>
+            <div class="section-subtitle">Channel architecture, qualification logic, and global setup</div>
+
+            <div class="config-card">
+                <h3>🌍 Global Channel Architecture</h3>
+                <ul>
+                    <li><strong>North America:</strong> SMS/iMessage via Link. A2P built in. iMessage for first 50 leads/day (blue bubble = higher trust). $500 one-time setup + $250/mo per line.</li>
+                    <li><strong>International:</strong> WhatsApp via existing Meta WhatsApp account. No additional fees expected. Covers UK, Europe, Dubai, LATAM, ROW.</li>
+                    <li><strong>Double-tap strategy:</strong> Charlie reaches out on both SMS and WhatsApp. Asks which channel the prospect prefers. Shuts off the one they don't use. Sticks to their preferred channel from there.</li>
+                    <li><strong>Ad campaign segmentation:</strong> Segment by geography at the ad level so Charlie knows which number/channel to use. UK number for Europe/international. US number for North America.</li>
+                    <li><strong>Anti-spam compliance:</strong> Link prevents mass blasts. Charlie is persistent but professional. No flagging risk when the talk track is conversational and goal-oriented (not spammy).</li>
+                </ul>
+            </div>
+
+            <div class="config-card">
+                <h3>💰 Conversational Qualification ($20K Liquidity)</h3>
+                <ul>
+                    <li><strong>Soft qualification:</strong> "Curious — what do you do for work?" If they're a CTO/banker/investor → fast-track to call. If signals are ambiguous → ask more.</li>
+                    <li><strong>Direct qualification:</strong> "Just so you know, the program is $10,000 to join plus a $10,000 minimum investment. Is that palatable?" Filters before burning closer time.</li>
+                    <li><strong>Job title data:</strong> Can upload global job data to Charlie so he can assess qualification based on stated occupation.</li>
+                    <li><strong>DQ handling:</strong> If someone clearly can't afford it, Charlie lets them know respectfully and moves them to dead/DQ in ActiveCampaign.</li>
+                </ul>
+            </div>
+
+            <div class="config-card">
+                <h3>⚙️ Technical Integration</h3>
+                <ul>
+                    <li><strong>CRM:</strong> ActiveCampaign — Charlie moves deals between pipeline stages, updates contact statuses, triggers different agents based on status changes</li>
+                    <li><strong>Phone:</strong> Link (recommended) for SMS/iMessage. Existing Meta WhatsApp for international.</li>
+                    <li><strong>Calendar:</strong> Confirm booking system on kickoff — Charlie sends invites, books conversationally, or sends calendar links</li>
+                    <li><strong>Dialer.io:</strong> Charlie is building a dialer.io integration for voice (3–6 month timeline). Drew knows Matt well. Future opportunity for voice outreach integration.</li>
+                    <li><strong>Data persistence:</strong> Charlie pushes conversation data into ActiveCampaign custom fields (goals, pain points, qualification info). Pulls it back for personalized reactivation follow-ups.</li>
+                </ul>
+            </div>
+
+            <div class="config-card">
+                <h3>🔇 The Firewall — Isolating Cold Traffic</h3>
+                <ul>
+                    <li>JB's plan: cold leads from new Meta campaigns go exclusively to Charlie — firewalled from the usual email chains and setter outreach</li>
+                    <li>Clean A/B test of Charlie's performance on cold traffic without overlapping touchpoints</li>
+                    <li>Existing warm funnel stays untouched — Charlie only handles cold leads + dead/no-show recovery from existing funnel</li>
+                    <li>Once Charlie proves out on cold, can expand to warm traffic augmentation</li>
+                </ul>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for London Real</span>
+        </div>
+    </div>
+
+    <!-- PAGE 8: IMPLEMENTATION ROADMAP -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Implementation Roadmap</div>
+            </div>
+
+            <h2>Your <span>Roadmap</span></h2>
+            <div class="section-subtitle">Two parallel tracks — immediate value + cold traffic build</div>
+
+            <div class="phase-card">
+                <div class="phase-label">Week 1 — Track 1: Immediate Value</div>
+                <h3>Build &amp; Launch Reactivation + Recovery Agents</h3>
+                <ul>
+                    <li><strong>Kickoff call (1 hour)</strong> — Build reactivation, cancellation rebooking, and no-show rebooking agents using proven templates. Connect ActiveCampaign integration.</li>
+                    <li><strong>Sparring sessions (Day 2–3)</strong> — Roleplay as prospects. Test objection handling, tone, qualification questions. Give feedback until Charlie is a 10/10 on these agents.</li>
+                    <li><strong>Go live on dead leads</strong> — Hit the ~1,000+ no-shows and dead opportunities. Also explore feeding the podcast subscriber list (people who know London Real but don't know the Dubai product).</li>
+                    <li><strong>Goal:</strong> Charlie pays for his entire annual license in month one from reactivation alone. Every no-show and cancellation from the existing funnel also gets recovered automatically.</li>
+                </ul>
+            </div>
+
+            <div class="phase-card">
+                <div class="phase-label">Week 1 — Track 2: Marketing Strategy (Parallel)</div>
+                <h3>Intro to Director of Marketing + Ad Strategy</h3>
+                <ul>
+                    <li><strong>Meet Tegas</strong> — Charlie's Director of Marketing. Manages ads for 20 high-ticket coaches doing $250K–$2.5M/mo. Will advise on ad formats, creative, CTAs, funnel architecture for cold.</li>
+                    <li><strong>Evaluate existing funnel</strong> — Determine whether to portion off a segment of current converting traffic for Charlie vs. building a new cold campaign from scratch.</li>
+                    <li><strong>Drew's recommendation:</strong> Don't launch a brand-new untested campaign with Charlie on day one. Leverage what's already converting — portion off existing traffic and send to Charlie instead of the current funnel. Eliminates the "is it the marketing or is it Charlie?" question.</li>
+                    <li>Weekly marketing workshops available for ongoing ad optimization.</li>
+                </ul>
+            </div>
+
+            <div class="phase-card">
+                <div class="phase-label">Weeks 2–3 — Top of Funnel + Show Rate</div>
+                <h3>Launch Cold Traffic Setter + Show Rate Agent</h3>
+                <ul>
+                    <li><strong>Build TOF setter</strong> — Full gap-selling flow with conversational qualification for $20K liquidity. Configure WhatsApp + SMS double-tap. Set up geo-segmented ad routing.</li>
+                    <li><strong>Build show rate agent</strong> — 7-step post-booking sequence. Closer impersonation, VSL check, case studies, timed reminders.</li>
+                    <li>Charlie has been training on real conversations from Track 1 reactivation for 1–2 weeks — knowledge base, objection handling, and Q&A are already built out.</li>
+                    <li><strong>Launch cold traffic</strong> — Firewalled from existing funnel. Clean test. Monitor intro response rate → book rate → show rate.</li>
+                </ul>
+            </div>
+
+            <div class="phase-card">
+                <div class="phase-label">Month 2+ — Optimize &amp; Scale</div>
+                <h3>Get to 10/10, Then Don't Touch It</h3>
+                <ul>
+                    <li>Weekly data reviews: intro response rate, connect rate, book rate, show rate, close rate, ROAS</li>
+                    <li>A/B test messaging, personas, frequency, qualification approaches</li>
+                    <li>Goal: 1–3 months to get all five managed agents to 10/10 performance</li>
+                    <li>Once stable: add NPS/referral agent (time-delay 3 months post-close, ask for referrals), dead lead reactivation cycles, evergreen webinar agent, additional campaign agents</li>
+                    <li>Unlimited self-managed agents available — by this point, you've seen the full process and can build your own</li>
+                </ul>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for London Real</span>
+        </div>
+    </div>
+
+    <!-- PAGE 9: CONFIRM & NEXT STEPS -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Confirm &amp; Next Steps</div>
+            </div>
+
+            <h2>Please <span>Confirm</span></h2>
+            <div class="section-subtitle">Review the items below so we're fully aligned before kickoff</div>
+
+            <div class="config-card">
+                <h3>📋 Items to Confirm</h3>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>ActiveCampaign pipeline structure</strong> — Confirm current pipeline stages and deal statuses. We need to map agent triggers correctly.</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Who's the closer?</strong> — Name(s) of the closer(s) Charlie will impersonate in the show rate sequence. New Closers.io hire?</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Calendar/booking system</strong> — What tool handles call bookings? Calendly, AC native, other?</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Link setup</strong> — Ready to proceed with Link ($500 setup + $250/mo)? Or exploring alternatives for A2P?</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>WhatsApp account</strong> — Confirm the existing Meta WhatsApp business account is available for Charlie integration. Any current bans/restrictions?</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>VSL / pre-call material</strong> — Share the VSL link and any case studies the show rate agent should send post-booking.</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Qualification thresholds</strong> — Confirm the $20K liquidity requirement. Any other qualification criteria (geography, accredited investor status, etc.)?</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Dead lead list</strong> — How many total dead leads/no-shows in AC? Any segments to prioritize or exclude?</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Podcast subscriber list</strong> — How many contacts with phone numbers? Ready to feed to Charlie for Dubai product awareness?</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Cold campaign plan</strong> — Which existing converting campaign to portion off for Charlie? Or building new? Connect with Tegas to align.</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Brand voice</strong> — Professional London trader? Casual and approachable? Brian's energy? Confirm tone, emoji usage, formality level.</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Banned topics</strong> — Any claims Charlie must avoid? (Investment returns, guaranteed outcomes, financial advice disclaimers?)</div></div>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for London Real</span>
+        </div>
+    </div>
+
+    <!-- PAGE 10: NEXT STEPS CTA -->
+    <div class="page" style="background: linear-gradient(135deg, #050507 0%, #0a0a1a 40%, #1a0a0a 100%); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2in 1.2in; margin: 0 auto;">
+        <div class="cover-logo" style="margin-bottom: 50px;">CHARLIE AI</div>
+        <h2 style="color: white; font-size: 36px; margin-bottom: 16px;">Let's unlock<br>cold for you.</h2>
+        <p style="color: #94a3b8; font-size: 15px; max-width: 450px; margin-bottom: 40px;">You've got the brand, the audience, and the product. Charlie handles the messy middle — turning cold opt-ins into qualified, prepped, high-show-rate calls at scale.</p>
+        <a href="https://www.charlieai.io/ai-onboarding" style="display: inline-block; background: white; color: #0a0a1a; font-size: 15px; font-weight: 700; padding: 14px 40px; border-radius: 50px; text-decoration: none;">Book Your Kickoff Call →</a>
+        <div style="margin-top: 50px;">
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 6px;"><a href="https://charlieai.io" style="color: var(--primary); text-decoration: none;">charlieai.io</a> · <a href="mailto:drew@systemsbyai.com" style="color: var(--primary); text-decoration: none;">drew@systemsbyai.com</a></p>
+        </div>
+        <div class="cover-bar"></div>
+    </div>
+
+</body>
+</html>
