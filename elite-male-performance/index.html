@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Implementation Plan — Elite Male Performance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #1E40AF;
+            --primary-dark: #1E3A8A;
+        }
+        @page { size: letter; margin: 0; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            color: #1a1a2e;
+            line-height: 1.6;
+            background: #f1f5f9;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .page {
+            width: 8.5in;
+            min-height: 11in;
+            padding: 0;
+            page-break-after: always;
+            position: relative;
+            overflow: hidden;
+            margin: 0 auto;
+            background: white;
+        }
+        .page:last-child { page-break-after: auto; }
+        @media print {
+            body { background: white; }
+            .page { page-break-after: always !important; page-break-inside: avoid !important; height: 11in !important; overflow: hidden !important; }
+            .page:last-child { page-break-after: auto !important; }
+            h2, h3, .section-subtitle { break-after: avoid; page-break-after: avoid; orphans: 3; widows: 3; }
+            .info-card, .detail-card, .phase-card, .setter-card, .config-card { break-inside: avoid; page-break-inside: avoid; }
+        }
+        .cover {
+            background: linear-gradient(135deg, #050507 0%, #0a0a1a 40%, #0d1528 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 3in 1.2in;
+            position: relative;
+        }
+        .cover::before {
+            content: '';
+            position: absolute;
+            top: -20%;
+            right: -10%;
+            width: 60%;
+            height: 80%;
+            background: radial-gradient(ellipse, rgba(30, 64, 175, 0.08), transparent 70%);
+            border-radius: 50%;
+        }
+        .cover-logo { font-size: 14px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; color: var(--primary); margin-bottom: 40px; position: relative; z-index: 1; }
+        .cover h1 { font-size: 42px; font-weight: 800; line-height: 1.15; margin-bottom: 20px; position: relative; z-index: 1; }
+        .cover h1 span { color: var(--primary); }
+        .cover-subtitle { font-size: 18px; color: #94a3b8; font-weight: 400; margin-bottom: 60px; position: relative; z-index: 1; }
+        .cover-meta { position: relative; z-index: 1; font-size: 13px; color: #64748b; line-height: 2; }
+        .cover-meta strong { color: #94a3b8; }
+        .cover-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--primary), var(--primary-dark)); }
+        .content { padding: 0.8in 1.0in; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid #e2e8f0; margin-bottom: 30px; }
+        .page-header-logo { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--primary); }
+        .page-header-title { font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+        h2 { font-size: 24px; font-weight: 800; color: #0a0a1a; margin-bottom: 6px; }
+        h2 span { color: var(--primary); }
+        .section-subtitle { font-size: 13px; color: #64748b; margin-bottom: 24px; }
+        h3 { font-size: 16px; font-weight: 700; color: #0a0a1a; margin-bottom: 6px; }
+        p { font-size: 12.5px; color: #374151; margin-bottom: 12px; }
+        .intro-text { font-size: 13.5px; color: #374151; line-height: 1.8; margin-bottom: 25px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+        .info-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 20px; }
+        .info-card.full-width { grid-column: 1 / -1; }
+        .info-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); margin-bottom: 4px; }
+        .info-value { font-size: 14px; font-weight: 600; color: #0a0a1a; line-height: 1.4; }
+        .info-value-sm { font-size: 12px; font-weight: 400; color: #475569; line-height: 1.6; }
+        .detail-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 22px; margin-bottom: 14px; }
+        .detail-card h3 { font-size: 14px; display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+        .detail-card p { font-size: 12px; color: #475569; margin-bottom: 0; line-height: 1.6; }
+        .detail-card ul { margin: 6px 0 0 16px; padding: 0; }
+        .detail-card ul li { font-size: 12px; color: #475569; margin-bottom: 4px; line-height: 1.5; }
+        .client-quote { background: linear-gradient(135deg, #050507, #0d1528); border-radius: 12px; padding: 22px 26px; margin: 20px 0; position: relative; }
+        .client-quote::before { content: '\201C'; font-size: 48px; font-weight: 800; color: var(--primary); position: absolute; top: 8px; left: 18px; opacity: 0.5; }
+        .client-quote p { color: #e2e8f0; font-size: 13px; font-style: italic; line-height: 1.7; margin-bottom: 0; padding-left: 20px; }
+        .client-quote .quote-attr { color: #94a3b8; font-size: 11px; font-style: normal; margin-top: 8px; padding-left: 20px; }
+        .setter-card { background: linear-gradient(135deg, #eff6ff, #dbeafe); border: 1px solid #93c5fd; border-radius: 10px; padding: 18px 22px; margin-bottom: 14px; }
+        .setter-card h3 { font-size: 14px; color: var(--primary-dark); margin-bottom: 4px; }
+        .setter-card p { font-size: 12px; color: #1e3a5f; margin-bottom: 0; line-height: 1.6; }
+        .setter-card .setter-detail { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .setter-tag { background: rgba(30, 64, 175, 0.15); color: var(--primary-dark); font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+        .phase-card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px 22px; margin-bottom: 14px; border-left: 4px solid var(--primary); }
+        .phase-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--primary); margin-bottom: 4px; }
+        .phase-card h3 { font-size: 15px; margin-bottom: 6px; }
+        .phase-card p { font-size: 12px; color: #475569; margin-bottom: 0; }
+        .phase-card ul { margin: 6px 0 0 16px; padding: 0; }
+        .phase-card ul li { font-size: 12px; color: #475569; margin-bottom: 3px; line-height: 1.5; }
+        .metrics-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-top: 20px; }
+        .metric-card { background: linear-gradient(135deg, #050507, #0d1528); color: white; border-radius: 12px; padding: 20px; text-align: center; }
+        .metric-number { font-size: 32px; font-weight: 800; color: var(--primary); line-height: 1.1; }
+        .metric-label { font-size: 11px; color: #94a3b8; margin-top: 4px; line-height: 1.4; }
+        .callout-box { background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border: 1px solid #7dd3fc; border-radius: 10px; padding: 16px 20px; margin: 16px 0; }
+        .callout-box h3 { font-size: 13px; color: #0c4a6e; margin-bottom: 4px; }
+        .callout-box p { font-size: 11.5px; color: #0e4f6e; margin-bottom: 0; line-height: 1.6; }
+        .callout-box.warning { background: linear-gradient(135deg, #fef2f2, #fee2e2); border-color: #fca5a5; }
+        .callout-box.warning h3 { color: #991b1b; }
+        .callout-box.warning p { color: #7f1d1d; }
+        .config-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 22px; margin-bottom: 14px; }
+        .config-card h3 { font-size: 14px; margin-bottom: 6px; }
+        .config-card p { font-size: 12px; color: #475569; margin-bottom: 0; line-height: 1.6; }
+        .config-card ul { margin: 6px 0 0 16px; padding: 0; }
+        .config-card ul li { font-size: 12px; color: #475569; margin-bottom: 4px; line-height: 1.5; }
+        .confirm-item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 12px; color: #374151; }
+        .confirm-item:last-child { border-bottom: none; }
+        .confirm-check { width: 18px; height: 18px; border: 2px solid #cbd5e1; border-radius: 4px; flex-shrink: 0; margin-top: 1px; }
+        .page-footer { position: absolute; bottom: 30px; left: 1.0in; right: 1.0in; display: flex; justify-content: space-between; font-size: 9px; color: #94a3b8; }
+    </style>
+</head>
+<body>
+
+    <!-- PAGE 1: COVER -->
+    <div class="page cover">
+        <div class="cover-logo">CHARLIE AI</div>
+        <h1>Implementation Plan<br>for <span>Elite Male<br>Performance</span></h1>
+        <div class="cover-subtitle">Audit, rebuild, and optimize — turning your existing Charlie setup into a high-performing revenue engine.</div>
+        <div class="cover-meta">
+            <strong>Prepared:</strong> March 12, 2026
+        </div>
+        <div class="cover-bar"></div>
+    </div>
+
+    <!-- PAGE 2: YOUR BUSINESS AT A GLANCE -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Implementation Plan</div>
+            </div>
+
+            <h2>Your Business at a <span>Glance</span></h2>
+            <div class="section-subtitle">Here's what we captured from our conversations — please confirm everything looks right.</div>
+
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-label">Business</div>
+                    <div class="info-value">Elite Male Performance</div>
+                    <div class="info-value-sm">Health, fitness, nutrition, and hormones coaching for men. High-ticket coaching program with bespoke programs built around individual goals, body type, and situation.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Point of Contact</div>
+                    <div class="info-value">Kyle Musca</div>
+                    <div class="info-value-sm">Founder. Based in Queensland, Australia. Returning client — has hands-on Charlie experience, understands the platform, has refined setting processes and provided extensive per-message feedback previously.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Markets</div>
+                    <div class="info-value">Australia + United States</div>
+                    <div class="info-value-sm">Dual-market operation. Requires separate Twilio phone numbers, separate agents, and separate pipeline/deal routing per geography so leads get a local number and localized agent.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">CRM &amp; Tools</div>
+                    <div class="info-value">GoHighLevel + Twilio</div>
+                    <div class="info-value-sm">GHL for CRM and pipeline management. Twilio for SMS. All agent triggers and routing driven by GHL pipeline stages, deal statuses, and contact tags.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Dead Leads</div>
+                    <div class="info-value">~2,000+ in GHL</div>
+                    <div class="info-value-sm">Couple thousand dead opportunities and old leads sitting in GHL — prime reactivation targets for scholarship plays and the Magic Hat Trick.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Previous Booking Rate</div>
+                    <div class="info-value">30–40%</div>
+                    <div class="info-value-sm">When the original Charlie setup was working, Kyle was seeing 30–40% lead-to-booking rates. The conversation quality from start to booking was strong — "50% perfect." Then it broke.</div>
+                </div>
+                <div class="info-card full-width">
+                    <div class="info-label">Training Assets Available</div>
+                    <div class="info-value-sm">Kyle has: (1) 50 real conversations that led to actual paying clients — gold for setter script training and persona building. (2) Tonality and speech pattern documents — refined wording, analogies, and communication style guides. (3) A "human text communication" guide for natural sentence structure. These will be used during the managed build process — not uploaded directly to Charlie to avoid knowledge base conflicts.</div>
+                </div>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Elite Male Performance</span>
+        </div>
+    </div>
+
+    <!-- PAGE 3: THE LEVRG AUDIT -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Audit Summary</div>
+            </div>
+
+            <h2>What <span>Happened</span> with Levrg</h2>
+            <div class="section-subtitle">A transparent assessment of the previous build and what needs to change</div>
+
+            <div class="detail-card">
+                <h3>🔴 Only 1–2 Agents Built (Should Be ~7)</h3>
+                <p>Levrg built a single agent where there should be specialized agents for each stage of the funnel. Different funnel stages require different talk tracks, different tones, and different objectives. A one-size-fits-all agent can't handle the nuance of reactivation vs. top-of-funnel vs. post-booking vs. no-show recovery. This is red flag number one.</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>🔴 No Post-Booking Flow</h3>
+                <p>The booking part was working — 30–40% lead-to-booking rate, solid conversation quality. Then it fell apart because there was zero post-booking follow-up. No closer impersonation, no pre-call confirmation, no show-rate optimization. Result: terrible show rate → kill switch. The booking engine was good; the delivery infrastructure didn't exist.</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>🔴 No Agent Instructions</h3>
+                <p>The agents had no instructions configured — no "don't accept surface level answers," no "dive deeper," no conversational guardrails. Instructions are the core brain of an agent. Without them, Charlie operates generic and unfocused. Kyle ended up spending hours giving per-message feedback and rewriting Levrg's work to compensate.</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>🔴 Old Instance, Not Upgraded</h3>
+                <p>The account is running on an older version of the Charlie platform. Knowledge base, settings UI, and agent capabilities have evolved. The old instance doesn't reflect current best practices or feature set. Needs to be brought up to current.</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>🔴 Document Upload Issues</h3>
+                <p>Kyle reported that document uploads consistently fail. This may be related to the old instance. Regardless, direct document uploads are not the recommended approach for training — custom personas and managed knowledge base configuration produce better, more controllable results.</p>
+            </div>
+
+            <div class="client-quote">
+                <p>It was 50% perfect, and then it just obviously wasn't — they didn't connect it up. So as long as it can continue the same degree of quality for the post-booking flow, then I would have been stoked with it.</p>
+                <p class="quote-attr">— Kyle Musca, Discovery Call</p>
+            </div>
+
+            <div class="callout-box warning">
+                <h3>⚠️ Our Approach: Don't Trust, Verify</h3>
+                <p>We're not going to trust what Levrg built. We have a headstart — not a rebuild — but we need to run through our full process. The existing setup will be audited, the agents will be rebuilt to spec, and we'll layer in our proven health/fitness/nutrition templates. Kyle's existing training assets (50 real conversations, tonality docs) will be incorporated properly through our managed build process.</p>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Elite Male Performance</span>
+        </div>
+    </div>
+
+    <!-- PAGE 4: YOUR AI SETTERS — PHASE 1 -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Your AI Setters</div>
+            </div>
+
+            <h2>What We're <span>Building</span> for You</h2>
+            <div class="section-subtitle">Phased deployment — generate revenue immediately, then optimize top-of-funnel</div>
+
+            <p class="intro-text" style="margin-bottom: 18px; font-weight: 600; color: #0a0a1a; font-size: 15px;">Phase 1 — Days 1–3: Quick Wins &amp; Safe Training Ground</p>
+            <p class="intro-text" style="margin-top: 0;">These agents target existing leads and recovery opportunities. They generate ROI immediately — the goal is to pay for Charlie's entire annual license in one reactivation campaign, if not 10x that. They also create a live, low-risk environment to train Charlie with real conversations before touching top-of-funnel leads. Your closer doesn't burn fresh leads while we optimize.</p>
+
+            <div class="setter-card">
+                <h3>🎓 Scholarship Reactivation Agent</h3>
+                <p>Targets the ~2,000+ dead leads in GHL. Proven health/fitness/nutrition scholarship play — reaches out to old leads with a compelling re-engagement angle. Charlie remembers context from previous conversations (e.g., "last time you mentioned wanting to lose 40 pounds") and personalizes every reactivation touchpoint. Uses gap selling: surfaces their goal, asks what's been the main hurdle, and books when they articulate why they can't do it alone. Follow-up frequency fully customizable — can space out to weekly, monthly, or whatever cadence fits.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">2,000+ Dead Leads</span>
+                    <span class="setter-tag">Scholarship Play</span>
+                    <span class="setter-tag">Context Memory</span>
+                    <span class="setter-tag">Gap Selling</span>
+                    <span class="setter-tag">Custom Frequency</span>
+                    <span class="setter-tag">GHL Pipeline Updates</span>
+                </div>
+            </div>
+
+            <div class="setter-card">
+                <h3>🎩 Magic Hat Trick Agent</h3>
+                <p>Kyle's custom reactivation play. Targets leads who booked a call but didn't convert to a paying client. "Hey Michael, every three months I do a random giveaway for anyone who's inquired about coaching — I randomly picked your name out of the hat. Must be your lucky day. Want a $50 voucher you can put straight towards coaching?" Different angle from the scholarship play — can be run on a different segment or rotated quarterly. Low-pressure, high-response-rate approach that reframes the conversation.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">Booked-Not-Closed Leads</span>
+                    <span class="setter-tag">$50 Voucher Offer</span>
+                    <span class="setter-tag">Quarterly Rotation</span>
+                    <span class="setter-tag">High Response Rate</span>
+                    <span class="setter-tag">Low Pressure</span>
+                </div>
+            </div>
+
+            <div class="setter-card">
+                <h3>🚫 Cancellation Rebooking Agent</h3>
+                <p>When a prospect cancels their coaching call, Charlie reaches out immediately to understand why and offer a convenient alternative time. Specialized talk track — different from the no-show agent. Quick, empathetic, removes friction, gets them rescheduled before momentum is lost.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">Cancellation Detection</span>
+                    <span class="setter-tag">Specialized Talk Track</span>
+                    <span class="setter-tag">Immediate Outreach</span>
+                    <span class="setter-tag">Rescheduling</span>
+                </div>
+            </div>
+
+            <div class="setter-card">
+                <h3>📞 No-Show Rebooking Agent</h3>
+                <p>When someone doesn't show up, Charlie follows up within minutes. Separate agent from the cancellation rebooker — different tone, different approach. Non-judgmental, direct, offers an easy path to rebook. If they don't rebook, they can be moved to dead/DQ'd for future reactivation campaigns.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">No-Show Detection</span>
+                    <span class="setter-tag">Separate Talk Track</span>
+                    <span class="setter-tag">Quick Follow-up</span>
+                    <span class="setter-tag">Rebook or DQ</span>
+                </div>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Elite Male Performance</span>
+        </div>
+    </div>
+
+    <!-- PAGE 5: YOUR AI SETTERS — PHASE 2 -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Your AI Setters (continued)</div>
+            </div>
+
+            <p class="intro-text" style="margin-bottom: 18px; font-weight: 600; color: #0a0a1a; font-size: 15px;">Phase 2 — Days 3–7: Top of Funnel &amp; Show Rate</p>
+            <p class="intro-text" style="margin-top: 0;">Once the reactivation agents are generating leads and revenue, we pivot to rebuilding the core funnel — the part that was "50% perfect." This time, with a full post-booking flow so show rate doesn't collapse.</p>
+
+            <div class="setter-card">
+                <h3>🎯 Top of Funnel Setter (Rebuilt)</h3>
+                <p>The core agent — handles new inbound leads from ads. Full conversational flow from first touch to booked call. Uses gap selling: "How much weight are you looking to lose?" → "What have you tried in the past?" → "Do you feel there's anything underlying going on?" → surfaces the hurdle → books. Charlie follows up until they book or die, but does so according to brand — you control the recency, frequency, and intensity. Can be configured as a bulldog or a gentle guide depending on the segment. Knowledge base carefully managed so Charlie is "smart enough to be dangerous" but deflects specific program questions to the call.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">New Inbound Leads</span>
+                    <span class="setter-tag">Gap Selling</span>
+                    <span class="setter-tag">60-Second Response</span>
+                    <span class="setter-tag">Buy or Die Follow-up</span>
+                    <span class="setter-tag">GHL Deal → "Booked"</span>
+                    <span class="setter-tag">Custom Persona</span>
+                    <span class="setter-tag">Knowledge Guardrails</span>
+                </div>
+            </div>
+
+            <div class="setter-card">
+                <h3>📈 Post-Booking Show Rate Sequence (7 Steps)</h3>
+                <p>This is what was missing. Five minutes after Charlie books a call, a separate agent reaches out impersonating the closer. Seven specialized touchpoints: (1) Closer introduction + social proof + scarcity ("we're extremely busy, if you can't make it, give me notice so we can put another person in your spot"). (2) Pre-call material send. (3) "Have you had a chance to watch the video yet?" check. (4–7) Timed reminders with pre-selling, expectation-setting, and confirmation touchpoints. This is how we get to consistently high show rates on cold, non-organic leads.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">7-Step Sequence</span>
+                    <span class="setter-tag">Closer Impersonation</span>
+                    <span class="setter-tag">5 Min Post-Booking</span>
+                    <span class="setter-tag">Social Proof + Scarcity</span>
+                    <span class="setter-tag">Pre-Call Material Check</span>
+                    <span class="setter-tag">Timed Reminders</span>
+                    <span class="setter-tag">Show Rate Optimization</span>
+                </div>
+            </div>
+
+            <div class="setter-card">
+                <h3>💀 Dead Lead Bulldog Agent</h3>
+                <p>For leads that went through the closer but didn't convert — "call done, not closed." This agent takes a more aggressive approach: "Hey, sounds like you're giving up on your weight loss goals." Can alternate between scholarship plays, magic hat offers, or direct follow-up depending on the segment and how long they've been cold. Configurable intensity — dial up or down based on results.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">Call Done, Not Closed</span>
+                    <span class="setter-tag">Direct Approach</span>
+                    <span class="setter-tag">Multi-Play Rotation</span>
+                    <span class="setter-tag">Configurable Intensity</span>
+                </div>
+            </div>
+
+            <div class="callout-box">
+                <h3>🔮 Why This Order Matters</h3>
+                <p>Starting with reactivation and recovery agents (Phase 1) serves two purposes: (1) Generates immediate ROI — potentially paying for the entire annual license in one campaign. (2) Creates a live training environment where Charlie can be optimized with real conversations before touching fresh top-of-funnel leads. Your closer doesn't risk burning new leads while we dial Charlie in. By the time we launch the TOF setter, Charlie's already been trained on real data in a safe environment.</p>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Elite Male Performance</span>
+        </div>
+    </div>
+
+    <!-- PAGE 6: CONFIGURATION DETAILS -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Configuration Details</div>
+            </div>
+
+            <h2>How We'll <span>Configure</span> Charlie</h2>
+            <div class="section-subtitle">Technical setup, knowledge management, and dual-market architecture</div>
+
+            <div class="config-card">
+                <h3>🌏 Dual-Market Architecture (Australia + US)</h3>
+                <ul>
+                    <li><strong>Separate Twilio numbers:</strong> Australian leads get an Australian phone number. US leads get a US phone number. No cross-market confusion.</li>
+                    <li><strong>Separate agents per market:</strong> Each geography gets its own set of agents with localized language, metrics (kg vs lbs, etc.), and cultural tone.</li>
+                    <li><strong>Pipeline routing:</strong> GHL pipelines or tags divide leads by geography. Different pipeline stages trigger different agents for each market.</li>
+                    <li><strong>Charlie adapts conversationally:</strong> Charlie is smart enough to match, mirror, and adjust tonality to who he's talking to — but the structural routing (which agent, which number) is driven by CRM setup.</li>
+                </ul>
+            </div>
+
+            <div class="config-card">
+                <h3>🧠 Knowledge Base Philosophy</h3>
+                <ul>
+                    <li><strong>Smart enough to be dangerous, not an expert:</strong> Charlie should NOT answer specific program questions (nutrition plans, keto vs carb-heavy, workout protocols). If asked, Charlie deflects: "Honestly, I wish I could answer that — I'm not the expert. But I know Kyle's programs are all built bespoke. Why don't we get you on a call and you can ask him directly?"</li>
+                    <li><strong>Settings override everything:</strong> Central settings (instructions, persona, personality, banned phrases) override any documents or feedback. This hierarchy is critical and non-negotiable.</li>
+                    <li><strong>No DIY document uploads:</strong> Kyle's 50 real conversations and tonality documents will be parsed by our team and incorporated through the managed build process — not uploaded directly. Direct uploads can create conflicts with settings and lead to unpredictable behavior.</li>
+                    <li><strong>Custom persona:</strong> Built from Kyle's videos/transcripts and the 50 real conversations. Charlie will sound like Kyle — his style, speech patterns, analogies, energy.</li>
+                </ul>
+            </div>
+
+            <div class="config-card">
+                <h3>⚙️ Technical Integration</h3>
+                <ul>
+                    <li><strong>CRM:</strong> GoHighLevel — all agent triggers driven by pipeline stages, deal statuses, and contact tags</li>
+                    <li><strong>SMS:</strong> Twilio (already in place) — separate AU and US numbers</li>
+                    <li><strong>Pipeline-driven activation:</strong> New lead → TOF setter. Booked → show rate sequence. No-show → rebooking agent. Cancelled → cancellation agent. Dead → reactivation/scholarship/magic hat.</li>
+                    <li><strong>Data persistence:</strong> Charlie pushes conversation data into GHL (goals, hurdles, objections). This data persists and is used in future reactivation touchpoints for personalized follow-up.</li>
+                    <li><strong>CSV imports:</strong> Old leads imported via GHL, tagged/pipelined appropriately for reactivation campaigns</li>
+                </ul>
+            </div>
+
+            <div class="config-card">
+                <h3>📊 Weekly Optimization (Ongoing)</h3>
+                <ul>
+                    <li>Weekly data review: intro response rate, connect rate, book rate, show rate</li>
+                    <li>Dynamic coaching: "Hey Kyle, I was looking at conversations — I think we need to push harder here" or "Let's dial back the intensity on this segment"</li>
+                    <li>A/B testing messaging approaches across different agents</li>
+                    <li>Weekly optimization workshops available (marketing, funnels, Charlie, selling)</li>
+                    <li>Goal: Get agents to 10/10, then your job is to not touch them. Like a magic marketing campaign that's crushing — don't mess with it.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Elite Male Performance</span>
+        </div>
+    </div>
+
+    <!-- PAGE 7: IMPLEMENTATION ROADMAP -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Implementation Roadmap</div>
+            </div>
+
+            <h2>Your <span>Roadmap</span></h2>
+            <div class="section-subtitle">From kickoff to fully operational — early value, safe optimization, then scale</div>
+
+            <div class="phase-card">
+                <div class="phase-label">Day 1 — Monday: Kickoff &amp; Quick Win Build</div>
+                <h3>Audit + Build Reactivation &amp; Recovery Agents</h3>
+                <ul>
+                    <li><strong>Deep audit of Levrg's build</strong> — Review all existing agents, instructions (or lack thereof), integrations, knowledge base, GHL triggers. Document what's salvageable vs. what needs to be rebuilt.</li>
+                    <li><strong>Build 4 agents same-day:</strong> Scholarship Reactivation, Magic Hat Trick, Cancellation Rebooker, No-Show Rebooker — using our proven health/fitness/nutrition prefab templates.</li>
+                    <li><strong>Configure GHL routing</strong> — Set up pipeline stages and triggers for each agent activation.</li>
+                    <li><strong>Quick roleplay</strong> — Test the reactivation agents to make sure tone and flow are dialed in.</li>
+                </ul>
+            </div>
+
+            <div class="phase-card">
+                <div class="phase-label">Days 2–3 — Tue/Wed: Launch Quick Wins</div>
+                <h3>Ship Reactivation &amp; Recovery, Start Generating Revenue</h3>
+                <ul>
+                    <li><strong>Launch scholarship play</strong> — Hit the ~2,000+ dead leads. Target: pay for Charlie's annual license in this one campaign.</li>
+                    <li><strong>Launch Magic Hat Trick</strong> — Target booked-but-not-closed segment with $50 voucher play.</li>
+                    <li><strong>Launch no-show + cancellation agents</strong> — Start recovering lost appointments immediately.</li>
+                    <li>Monitor conversations, give real-time feedback. These live conversations become training data for the TOF agent.</li>
+                </ul>
+            </div>
+
+            <div class="phase-card">
+                <div class="phase-label">Days 3–5 — Wed–Fri: Top of Funnel Rebuild</div>
+                <h3>Rebuild Core Setter + Post-Booking Flow</h3>
+                <ul>
+                    <li><strong>Parse Kyle's 50 real conversations</strong> — Extract winning patterns, language, objection handling. May build multiple agent variations.</li>
+                    <li><strong>Build custom persona</strong> — From videos/transcripts + conversation data. Charlie sounds like Kyle.</li>
+                    <li><strong>Rebuild TOF setter</strong> — Full gap-selling flow with proper instructions, knowledge guardrails, and follow-up cadence.</li>
+                    <li><strong>Build 7-step post-booking sequence</strong> — The missing piece. Closer impersonation, social proof, pre-call material check, timed reminders.</li>
+                    <li><strong>Configure AU + US split</strong> — Separate Twilio numbers, separate agents, separate pipelines per geography.</li>
+                    <li>Roleplay extensively — test edge cases, objection handling, program questions (should deflect, not answer).</li>
+                </ul>
+            </div>
+
+            <div class="phase-card">
+                <div class="phase-label">Week 2+ — Ongoing Optimization</div>
+                <h3>Monitor, Optimize, Scale</h3>
+                <ul>
+                    <li>Weekly data reviews — intro response rate, connect rate, book rate, show rate, close rate.</li>
+                    <li>Dynamic coaching and A/B testing across agents.</li>
+                    <li>Slack support for real-time questions and adjustments.</li>
+                    <li>Goal: 1–3 months to get all agents to 10/10 performance, then hands-off.</li>
+                    <li>Once stable: explore additional agents (low-ticket downsell, Instagram DM campaigns, referral plays, etc.).</li>
+                </ul>
+            </div>
+
+            <div class="metrics-grid" style="margin-top: 16px;">
+                <div class="metric-card">
+                    <div class="metric-number">2K+</div>
+                    <div class="metric-label">Dead leads<br>ready to reactivate</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number">30-40%</div>
+                    <div class="metric-label">Previous book rate<br>(before it broke)</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number">7</div>
+                    <div class="metric-label">Post-booking steps<br>(previously: zero)</div>
+                </div>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Elite Male Performance</span>
+        </div>
+    </div>
+
+    <!-- PAGE 8: CONFIRM & NEXT STEPS -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Confirm &amp; Next Steps</div>
+            </div>
+
+            <h2>Please <span>Confirm</span></h2>
+            <div class="section-subtitle">Review the items below so we're fully aligned before kickoff</div>
+
+            <div class="config-card">
+                <h3>📋 Items to Confirm</h3>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>GHL pipeline stages</strong> — Confirm your current pipeline structure and deal stages. We need to map agent triggers to the right stages.</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Who's the closer?</strong> — Name(s) of the closer(s) Charlie will impersonate in the post-booking flow.</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Pre-call material</strong> — Do you have a VSL, video, or one-pager that should be sent post-booking? If so, share the link.</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Twilio numbers</strong> — Do you already have separate AU and US Twilio numbers? If not, we'll set those up on kickoff.</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Calendar booking system</strong> — GHL calendar, Calendly, or other? Confirm the booking link(s) for each market.</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Scholarship offer details</strong> — What's the scholarship play? Discount amount, framing, any exclusions?</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Magic Hat voucher</strong> — Confirm $50 amount, any terms/conditions, expiry?</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>50 real conversations</strong> — Send us the 50 conversations that led to paying clients (don't upload to Charlie — send directly to the team).</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Tonality documents</strong> — Share the speech pattern, analogy, and human text communication guides (same — send to team, don't upload).</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Videos for custom persona</strong> — 3–5 videos of Kyle for persona building. Transcripts preferred but not required.</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Dead lead segments</strong> — Any segments within the 2K+ dead leads to prioritize or exclude? (e.g., recent leads first, exclude refund requests)</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Banned topics/phrases</strong> — Anything Charlie should never say? Specific claims, competitor mentions, medical advice boundaries?</div></div>
+            </div>
+
+            <div class="callout-box" style="margin-top: 16px;">
+                <h3>💰 Referral Opportunity</h3>
+                <p>Kyle mentioned a client getting too many leads for human setters to handle. We'll set up a First Promoter affiliate link — 20% commission for life on any referral that closes. Standard license is $2,000/mo (minimum discounted rate for referrals). Kyle's rate is a special $1,500/mo not available to new clients.</p>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Elite Male Performance</span>
+        </div>
+    </div>
+
+    <!-- PAGE 9: NEXT STEPS CTA -->
+    <div class="page" style="background: linear-gradient(135deg, #050507 0%, #0a0a1a 40%, #0d1528 100%); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2in 1.2in; margin: 0 auto;">
+        <div class="cover-logo" style="margin-bottom: 50px;">CHARLIE AI</div>
+        <h2 style="color: white; font-size: 36px; margin-bottom: 16px;">Let's finish what<br>they started.</h2>
+        <p style="color: #94a3b8; font-size: 15px; max-width: 450px; margin-bottom: 40px;">You've already seen what Charlie can do when the booking engine is working. This time, we're building the full stack — from reactivation to show rate — with the team and process to back it up.</p>
+        <a href="https://www.charlieai.io/ai-onboarding" style="display: inline-block; background: white; color: #0a0a1a; font-size: 15px; font-weight: 700; padding: 14px 40px; border-radius: 50px; text-decoration: none;">Book Your Kickoff Call →</a>
+        <div style="margin-top: 50px;">
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 6px;"><a href="https://charlieai.io" style="color: var(--primary); text-decoration: none;">charlieai.io</a> · <a href="mailto:drew@systemsbyai.com" style="color: var(--primary); text-decoration: none;">drew@systemsbyai.com</a></p>
+        </div>
+        <div class="cover-bar"></div>
+    </div>
+
+</body>
+</html>
