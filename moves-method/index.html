@@ -198,11 +198,11 @@
                 </div>
                 <div class="info-card full-width">
                     <div class="info-label">Tech Stack</div>
-                    <div class="info-value-sm"><strong>CRM:</strong> HubSpot (new — ~3 months, 140K contacts). Previously GHL (still has ~400K contacts). <strong>Dialer/SMS:</strong> Allaware (Twilio behind it — API key access confirmed by Daniel). <strong>Phone:</strong> Allaware for outbound dialing. <strong>IG Automation:</strong> ManyChat (used for new follower initial messages). <strong>Calendar:</strong> HubSpot native booking — round robin + external weighted round robin app that prioritizes closers by performance. <strong>HubSpot Implementation:</strong> Sales Momentum (agency — Dean + Aaron/Evan). <strong>Previous iMessage:</strong> Tried SendBlue via GHL, stopped — no show rate impact + API failures.</div>
+                    <div class="info-value-sm"><strong>CRM:</strong> HubSpot (new — ~3 months, 140K contacts). Previously GHL (still has ~400K contacts). <strong>Dialer/SMS:</strong> Allaware (Twilio behind it — Twilio license is likely Allaware's, not Moves Method's. Daniel identified an SMS API in the platform that may work — needs testing on build call). <strong>Phone:</strong> Allaware for outbound dialing. <strong>IG Automation:</strong> ManyChat (used for new follower initial messages). <strong>Calendar:</strong> HubSpot native booking — round robin + external weighted round robin app that prioritizes closers by performance. <strong>HubSpot Implementation:</strong> Sales Momentum (agency — Dean + Aaron/Evan). <strong>Previous iMessage:</strong> Tried SendBlue via GHL, stopped — no show rate impact + API failures.</div>
                 </div>
                 <div class="info-card full-width">
                     <div class="info-label">Current Lead Handling</div>
-                    <div class="info-value-sm">Inbound setting team handles toolkit purchasers who book. Outbound dialing team hits purchasers who didn't book + opt-ins who didn't purchase. When a lead transfers from setter to closer, conversation reassigns in the system — setters lose visibility, incoming messages get dropped. Amanda previously managed an IGDM team but ManyChat "dropped the ball on conversations" — human had to step in constantly. Currently using canned/automated text messages — want to replace with conversational AI.</div>
+                    <div class="info-value-sm">Inbound setting team handles incoming leads and responses. Outbound dialing team hits toolkit purchasers who didn't book the mobility evaluation. When a lead transfers from setter to closer, conversation reassigns in the system — setters lose visibility, incoming messages get dropped. Amanda previously managed an IGDM team but ManyChat "dropped the ball on conversations" — human had to step in constantly. Currently using canned/automated text messages — want to replace with conversational AI.</div>
                 </div>
             </div>
         </div>
@@ -245,7 +245,7 @@
 
             <div class="detail-card">
                 <h3>🔧 Dual-CRM Technical Complexity</h3>
-                <p>Moved to HubSpot ~3 months ago (140K contacts), but GHL still holds ~400K contacts. Proper reactivation requires working both systems. Daniel flagged: (1) carrier blocking risk on mass sends, (2) international SMS costs (~30% non-US leads), (3) conversation visibility for setters across platforms. Solution: Charlie integrates natively with both HubSpot and GHL, batched sends, WhatsApp for international.</p>
+                <p>Moved to HubSpot ~3 months ago (140K contacts), but GHL still holds ~400K contacts. Proper reactivation requires working both systems. Daniel flagged: (1) carrier blocking risk on mass sends, (2) international SMS costs (~30% non-US leads), (3) conversation visibility for setters across platforms. Solution: Charlie integrates natively with both HubSpot and GHL, batched sends, WhatsApp for international. Note: Amanda mentioned they recently did webinar-based reactivations — so the team has some reactivation experience already.</p>
             </div>
 
             <div class="client-quote">
@@ -276,7 +276,7 @@
             <h2>What We're <span>Building</span> for You</h2>
             <div class="section-subtitle">Phase 1 — Recovery agents that prove ROI immediately and train Charlie in a low-risk environment</div>
 
-            <p class="intro-text" style="margin-top: 0;">We always start here. These agents target existing leads and recovery opportunities — the goal is to 5x what you paid for Charlie's annual license in week one. They also create a live, low-risk environment to train Charlie with real conversations before touching fresh top-of-funnel leads. Your 57-person team doesn't burn new leads while we optimize.</p>
+            <p class="intro-text" style="margin-top: 0;">We always start here, building from 14 proven, pre-built agent templates that we'll customize for your exact funnel. These initial agents target existing leads and recovery opportunities — the goal is to 5x what you paid for Charlie's annual license in week one. They also create a live, low-risk environment to train Charlie with real conversations before touching fresh top-of-funnel leads. Your 57-person team doesn't burn new leads while we optimize.</p>
 
             <div class="setter-card">
                 <h3>🎯 Agent 1 — Database Reactivation (Magic Hat + Scholarship Play)</h3>
@@ -411,6 +411,11 @@
                 <p>When a closer completes a call but doesn't close — lead was warm but needed more time — Charlie picks them up and follows up persistently. These are people who showed up, had a good conversation, but needed another touch.</p>
             </div>
 
+            <div class="detail-card">
+                <h3>🚫 Customer Support — Not Yet</h3>
+                <p>Daniel asked about using Charlie for customer support (email tickets via HubSpot). Drew confirmed this is NOT a fit today — Charlie's architecture is "relentless until outcome" which becomes annoying for support interactions ("did this answer your question?" on repeat). Email integration for HubSpot/GHL is coming Q2 2026 (April–June). Customer experience AI is on the roadmap for next year. For now, HubSpot's native AI agent is the better tool for support tickets.</p>
+            </div>
+
             <h2 style="margin-top: 28px;">How We'll <span>Configure</span> Charlie</h2>
             <div class="section-subtitle">Technical and brand setup details</div>
 
@@ -463,7 +468,7 @@
             <div class="config-card">
                 <h3>📱 Messaging — SMS, WhatsApp, Instagram</h3>
                 <ul>
-                    <li><strong>SMS (US ~70%):</strong> Allaware uses Twilio. Daniel confirmed an SMS API is accessible in the Allaware platform — we'll plug Charlie into this. Need to validate: will messages appear in the Allaware inbox so setters can see the conversation?</li>
+                    <li><strong>SMS (US ~70%):</strong> Allaware uses Twilio — but the Twilio license is likely Allaware's, not Moves Method's. Daniel identified an SMS API in the Allaware platform that may work for Charlie's integration. Need to validate on build call: (1) Can Charlie use the Allaware SMS API? (2) Will messages appear in the Allaware inbox so setters can see the conversation? Drew has 50–100 clients on Allaware — some own their Twilio license, some don't. This is the key technical blocker.</li>
                     <li><strong>WhatsApp (International ~30%):</strong> For non-US leads, WhatsApp through GHL's native Twilio/WhatsApp integration. Avoids expensive international SMS rates and works better in Europe (GDPR compliance).</li>
                     <li><strong>Instagram DM:</strong> Connected through Charlie for inbound DM handling. ManyChat stays for new follower initial outbound only — Charlie handles all follow-up, keyword triggers, and comment replies.</li>
                     <li><strong>iMessage:</strong> Previously tried SendBlue via GHL — stopped due to API failures and no show rate impact. Link is available if they want to revisit.</li>
@@ -520,7 +525,7 @@
                 <h3>Get Our Ducks in a Row</h3>
                 <ul>
                     <li>Map HubSpot pipeline stages and deal statuses to Charlie agent triggers</li>
-                    <li>Validate Allaware Twilio API integration — test message delivery and inbox visibility</li>
+                    <li>Validate Allaware Twilio API integration — test message delivery and inbox visibility. If needed, we can connect with Sales Momentum (Dean/Aaron/Evan), your HubSpot implementers, to assist.</li>
                     <li>Connect HubSpot app, load knowledge base, set Vanya's brand voice and persona</li>
                     <li>Configure GHL integration for legacy contact reactivation</li>
                     <li>Set up reactivation batching strategy — carrier protection, WhatsApp for international</li>
