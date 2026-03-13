@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Implementation Plan — Moves Method</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #834CD2;
+            --primary-dark: #534FCD;
+        }
+        @page { size: letter; margin: 0; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            color: #1a1a2e;
+            line-height: 1.6;
+            background: #f1f5f9;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .page {
+            width: 8.5in;
+            min-height: 11in;
+            padding: 0;
+            page-break-after: always;
+            position: relative;
+            overflow: hidden;
+            margin: 0 auto;
+            background: white;
+        }
+        .page:last-child { page-break-after: auto; }
+        @media print {
+            body { background: white; }
+            .page { page-break-after: always !important; page-break-inside: avoid !important; height: 11in !important; overflow: hidden !important; }
+            .page:last-child { page-break-after: auto !important; }
+            h2, h3, .section-subtitle { break-after: avoid; page-break-after: avoid; orphans: 3; widows: 3; }
+            .info-card, .detail-card, .phase-card, .setter-card, .config-card { break-inside: avoid; page-break-inside: avoid; }
+        }
+        .cover {
+            background: linear-gradient(135deg, #050507 0%, #0a0a1a 40%, #0d1528 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 3in 1.2in;
+            position: relative;
+        }
+        .cover::before {
+            content: '';
+            position: absolute;
+            top: -20%;
+            right: -10%;
+            width: 60%;
+            height: 80%;
+            background: radial-gradient(ellipse, rgba(131, 76, 210, 0.08), transparent 70%);
+            border-radius: 50%;
+        }
+        .cover-logo { font-size: 14px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; color: var(--primary); margin-bottom: 40px; position: relative; z-index: 1; }
+        .cover h1 { font-size: 42px; font-weight: 800; line-height: 1.15; margin-bottom: 20px; position: relative; z-index: 1; }
+        .cover h1 span { color: var(--primary); }
+        .cover-subtitle { font-size: 18px; color: #94a3b8; font-weight: 400; margin-bottom: 60px; position: relative; z-index: 1; }
+        .cover-meta { position: relative; z-index: 1; font-size: 13px; color: #64748b; line-height: 2; }
+        .cover-meta strong { color: #94a3b8; }
+        .cover-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--primary), var(--primary-dark)); }
+        .content { padding: 0.8in 1.0in; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid #e2e8f0; margin-bottom: 30px; }
+        .page-header-logo { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--primary); }
+        .page-header-title { font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+        h2 { font-size: 24px; font-weight: 800; color: #0a0a1a; margin-bottom: 6px; }
+        h2 span { color: var(--primary); }
+        .section-subtitle { font-size: 13px; color: #64748b; margin-bottom: 24px; }
+        h3 { font-size: 16px; font-weight: 700; color: #0a0a1a; margin-bottom: 6px; }
+        p { font-size: 12.5px; color: #374151; margin-bottom: 12px; }
+        .intro-text { font-size: 13.5px; color: #374151; line-height: 1.8; margin-bottom: 25px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+        .info-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 20px; }
+        .info-card.full-width { grid-column: 1 / -1; }
+        .info-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); margin-bottom: 4px; }
+        .info-value { font-size: 14px; font-weight: 600; color: #0a0a1a; line-height: 1.4; }
+        .info-value-sm { font-size: 12px; font-weight: 400; color: #475569; line-height: 1.6; }
+        .detail-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 22px; margin-bottom: 14px; }
+        .detail-card h3 { font-size: 14px; display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+        .detail-card p { font-size: 12px; color: #475569; margin-bottom: 0; line-height: 1.6; }
+        .detail-card ul { margin: 6px 0 0 16px; padding: 0; }
+        .detail-card ul li { font-size: 12px; color: #475569; margin-bottom: 4px; line-height: 1.5; }
+        .client-quote { background: linear-gradient(135deg, #050507, #0d1528); border-radius: 12px; padding: 22px 26px; margin: 20px 0; position: relative; }
+        .client-quote::before { content: '"'; font-size: 48px; font-weight: 800; color: var(--primary); position: absolute; top: 8px; left: 18px; opacity: 0.5; }
+        .client-quote p { color: #e2e8f0; font-size: 13px; font-style: italic; line-height: 1.7; margin-bottom: 0; padding-left: 20px; }
+        .client-quote .quote-attr { color: #94a3b8; font-size: 11px; font-style: normal; margin-top: 8px; padding-left: 20px; }
+        .setter-card { background: linear-gradient(135deg, #f0f0ff, #e8e0ff); border: 1px solid #c4b5fd; border-radius: 10px; padding: 18px 22px; margin-bottom: 14px; }
+        .setter-card h3 { font-size: 14px; color: var(--primary-dark); margin-bottom: 4px; }
+        .setter-card p { font-size: 12px; color: #3b3270; margin-bottom: 0; line-height: 1.6; }
+        .setter-card .setter-detail { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .setter-tag { background: rgba(131, 76, 210, 0.15); color: var(--primary-dark); font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+        .phase-card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px 22px; margin-bottom: 14px; border-left: 4px solid var(--primary); }
+        .phase-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--primary); margin-bottom: 4px; }
+        .phase-card h3 { font-size: 15px; margin-bottom: 6px; }
+        .phase-card p { font-size: 12px; color: #475569; margin-bottom: 0; }
+        .phase-card ul { margin: 6px 0 0 16px; padding: 0; }
+        .phase-card ul li { font-size: 12px; color: #475569; margin-bottom: 3px; line-height: 1.5; }
+        .config-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 22px; margin-bottom: 14px; }
+        .config-card h3 { font-size: 14px; margin-bottom: 8px; }
+        .config-card ul { margin: 0 0 0 16px; padding: 0; }
+        .config-card ul li { font-size: 12px; color: #475569; margin-bottom: 6px; line-height: 1.5; }
+        .config-card ul li strong { color: #1a1a2e; }
+        .metrics-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-top: 20px; }
+        .metric-card { background: linear-gradient(135deg, #050507, #0d1528); color: white; border-radius: 12px; padding: 20px; text-align: center; }
+        .metric-number { font-size: 32px; font-weight: 800; color: var(--primary); line-height: 1.1; }
+        .metric-label { font-size: 11px; color: #94a3b8; margin-top: 4px; line-height: 1.4; }
+        .callout-box { background: linear-gradient(135deg, #fef3c7, #fef9c3); border: 1px solid #fbbf24; border-radius: 10px; padding: 16px 20px; margin: 16px 0; }
+        .callout-box h3 { font-size: 13px; color: #92400e; margin-bottom: 4px; }
+        .callout-box p { font-size: 11.5px; color: #78350f; margin-bottom: 0; line-height: 1.6; }
+        .page-footer { position: absolute; bottom: 30px; left: 1.0in; right: 1.0in; display: flex; justify-content: space-between; font-size: 9px; color: #94a3b8; }
+        .confirm-item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 12px; color: #374151; }
+        .confirm-item:last-child { border-bottom: none; }
+        .confirm-check { width: 18px; height: 18px; border: 2px solid #cbd5e1; border-radius: 4px; flex-shrink: 0; margin-top: 1px; }
+    </style>
+</head>
+<body>
+
+    <!-- PAGE 1: COVER -->
+    <div class="page cover">
+        <div class="cover-logo">CHARLIE AI</div>
+        <h1>Implementation Plan<br>for <span>Moves Method</span></h1>
+        <div class="cover-subtitle">Your personalized AI setter deployment — built around your funnel, your audience, and your growth goals.</div>
+        <div class="cover-meta">
+            <strong>Prepared:</strong> March 13, 2026<br>
+            <strong>Prepared by:</strong> Drew Millington | systemsbyai.com<br>
+            <strong>Contact:</strong> Amanda Smith, Set Team Director
+        </div>
+        <div class="cover-bar"></div>
+    </div>
+
+    <!-- PAGE 2: YOUR BUSINESS AT A GLANCE -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Client Overview</div>
+            </div>
+
+            <h2>Your Business at a <span>Glance</span></h2>
+            <div class="section-subtitle">Here's what we captured from our conversations — please confirm everything looks right.</div>
+
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-label">Business Name</div>
+                    <div class="info-value">Moves Method</div>
+                    <div class="info-value-sm">movesmethod.com</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Primary Contact</div>
+                    <div class="info-value">Amanda Smith</div>
+                    <div class="info-value-sm">Set Team Director</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Industry / Vertical</div>
+                    <div class="info-value">Fitness / Mobility Training</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Referral Source</div>
+                    <div class="info-value">Cole Gordon Event</div>
+                    <div class="info-value-sm">Via Josh Fear → Iggy (Charlie CEO)</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Offer / Price Points</div>
+                    <div class="info-value">Low-Ticket → High-Ticket Coaching</div>
+                    <div class="info-value-sm">$27 Moves Method Toolkit (front-end, 57,000+ customers) → high-ticket coaching/programs (confirm pricing on kickoff)</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Audience Size</div>
+                    <div class="info-value">1,000,000+ Followers</div>
+                    <div class="info-value-sm">57,000+ customers, 50+ countries</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">CRM</div>
+                    <div class="info-value">HubSpot</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Dialing System</div>
+                    <div class="info-value">Allaware</div>
+                    <div class="info-value-sm">Confirm SMS/messaging system behind Allaware on kickoff</div>
+                </div>
+                <div class="info-card full-width">
+                    <div class="info-label">Current Lead Handling</div>
+                    <div class="info-value-sm">Outbound dialing team (human setters) reaching out to leads. When a lead is transferred to a closer, the conversation reassigns in the system — setters lose visibility on the thread, and incoming messages from the lead can get dropped. Amanda manages the set team.</div>
+                </div>
+                <div class="info-card full-width">
+                    <div class="info-label">Funnel / Lead Flow</div>
+                    <div class="info-value-sm">Ad-driven funnel selling $27 Moves Method Toolkit (mobility program, lifetime access, normally $247). Massive low-ticket customer base (57K+) that gets upsold into higher-ticket coaching. Instagram is a major channel — 1M+ followers. Leads come through ads and organic social → outbound dialing team qualifies → closers handle sales calls.</div>
+                </div>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Moves Method</span>
+        </div>
+    </div>
+
+    <!-- PAGE 3: WHAT WE HEARD -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Discovery Summary</div>
+            </div>
+
+            <h2>What We <span>Heard</span></h2>
+            <div class="section-subtitle">Key pain points and opportunities from our conversation</div>
+
+            <div class="detail-card">
+                <h3>🤖 AI Conversation Quality</h3>
+                <p>Amanda's biggest frustration with existing AI tools (ChatGPT, chatbots) is that they sound robotic — "like speaking to an underpaid VA." Charlie's casual, natural conversation style was the #1 thing that caught her eye on the website. The AI needs to sound human and match the brand's energetic, approachable tone.</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>📞 Outbound Dialing Team — Reduce, Not Replace</h3>
+                <p>Moves Method has an outbound dialing team. The goal is NOT to fully replace them but to reduce the team size by layering in AI outreach — more volume, more consistency, lower cost per lead touched. Charlie handles the repetitive outreach at scale while human setters focus on high-value conversations.</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>💬 Dropped Conversations When Leads Transfer</h3>
+                <p>When a lead is transferred from a setter to a closer, the conversation reassigns in the system. The setter can't see it anymore, and incoming messages from the lead fall into a void — nobody picks them up. Amanda needs a "bridge agent" that catches these orphaned messages and facilitates rescheduling or re-engagement so no lead falls through the cracks.</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>📱 Instagram DM Setting</h3>
+                <p>With 1M+ followers and a massive social presence, Amanda wants to explore Instagram DM as a setting channel. Charlie can respond to IG DMs in real time — qualifying leads conversationally and booking calls 24/7 without the setter team needing to monitor the inbox.</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>🔗 Multi-System Integration</h3>
+                <p>Amanda wants AI across multiple systems — not just one channel. HubSpot for CRM, Allaware for dialing, Instagram for DMs. Charlie integrates natively with HubSpot and Instagram, and can augment the Allaware workflow with SMS/messaging follow-up around dial attempts.</p>
+            </div>
+
+            <div class="client-quote">
+                <p>That's my biggest complaint. I work with ChatGPT all day and it's like speaking to an underpaid VA. If it's as casual as it seems like the videos on the site — that would be fantastic.</p>
+                <p class="quote-attr">— Amanda Smith, Set Team Director</p>
+            </div>
+
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Moves Method</span>
+        </div>
+    </div>
+
+    <!-- PAGE 4: WHAT WE'RE BUILDING — PHASE 1 (Recovery + Bridge) -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Your AI Setters</div>
+            </div>
+
+            <h2>What We're <span>Building</span> for You</h2>
+            <div class="section-subtitle">Phase 1 — Recovery agents that generate ROI immediately and create a safe training environment</div>
+
+            <p class="intro-text" style="margin-top: 0;">These agents target existing leads and recovery opportunities. They generate ROI immediately — and they create a live, low-risk environment to train Charlie with real conversations before touching fresh top-of-funnel leads. Your setter team doesn't burn new leads while we optimize.</p>
+
+            <div class="setter-card">
+                <h3>🔄 Agent 1 — Conversation Bridge / Handoff Recovery</h3>
+                <p>The gap Amanda described — when leads transfer to closers and messages get dropped. This agent monitors for orphaned inbound messages post-transfer. When a lead sends a message that nobody's picking up, Charlie jumps in: confirms the appointment, answers basic questions, or facilitates rescheduling. Impersonates the closer's tone and keeps the conversation alive until the closer picks it up. No more leads falling through the cracks during handoffs.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">Handoff Recovery</span>
+                    <span class="setter-tag">Closer Impersonation</span>
+                    <span class="setter-tag">Rescheduling</span>
+                    <span class="setter-tag">HubSpot Integration</span>
+                </div>
+            </div>
+
+            <div class="setter-card">
+                <h3>📲 Agent 2 — Show Rate Protector (7-Step Post-Booking)</h3>
+                <p>Five minutes after a prospect books a call with a closer, Charlie texts from the closer's number: "Hey, it's [closer name]. Looking forward to our call. Just a heads up, we don't allow our schedule to stay open — if you need to reschedule, let me know now." Then drops into pre-call material, confirms they've reviewed it, and sends personal reminders leading up to the call. This is the single biggest ROI lever — pushing show rates toward 70–80% on cold, non-organic leads.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">Closer Impersonation</span>
+                    <span class="setter-tag">7-Step Sequence</span>
+                    <span class="setter-tag">SMS</span>
+                    <span class="setter-tag">Show Rate Optimization</span>
+                </div>
+            </div>
+
+            <div class="setter-card">
+                <h3>🎯 Agent 3 — Database Reactivation</h3>
+                <p>Re-engages dormant leads from HubSpot with personalized, conversational outreach. With 57,000+ low-ticket customers and likely thousands of leads who expressed interest in higher-ticket coaching but never booked — this is a goldmine. Charlie reaches out with proven reactivation campaigns (scholarship play, exclusive offer, value-first check-in), surfaces their goals and pain points, and books when they're ready. Follow-up frequency fully customizable.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">HubSpot Import</span>
+                    <span class="setter-tag">SMS</span>
+                    <span class="setter-tag">Personalized Outreach</span>
+                    <span class="setter-tag">Gap Selling</span>
+                </div>
+            </div>
+
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Moves Method</span>
+        </div>
+    </div>
+
+    <!-- PAGE 5: WHAT WE'RE BUILDING — PHASE 2 (Scale) -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Your AI Setters — Phase 2</div>
+            </div>
+
+            <h2 style="visibility: hidden; height: 0; margin: 0;">Phase 2</h2>
+            <div class="section-subtitle">Phase 2 — Scale agents that replace repetitive outbound volume and open new channels</div>
+
+            <div class="setter-card">
+                <h3>💬 Agent 4 — Instagram DM Setter</h3>
+                <p>With 1M+ followers and a massive social footprint, IG DMs are a high-value channel. Charlie responds to inbound DMs in real time — qualifying leads conversationally, answering questions about the program, and booking calls 24/7. No more missed DMs sitting in the inbox for hours. Charlie sounds like a real team member, matches the brand's energy, and books qualified prospects straight to the calendar.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">Instagram DM</span>
+                    <span class="setter-tag">Real-Time Response</span>
+                    <span class="setter-tag">Qualification</span>
+                    <span class="setter-tag">Calendar Booking</span>
+                </div>
+            </div>
+
+            <div class="setter-card">
+                <h3>📞 Agent 5 — Outbound SMS/Text Setter (Dialing Team Augmentation)</h3>
+                <p>This is the play to reduce the dialing team. Instead of human setters cold-calling every lead on the list, Charlie reaches out via SMS first — a warm, conversational text that feels personal. Leads who respond positively get qualified and booked. Leads who don't respond get flagged for a human dial attempt. This flips the model: AI handles the volume, humans handle the high-value conversations. Result: smaller dialing team, more booked calls, lower cost per appointment.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">SMS Outbound</span>
+                    <span class="setter-tag">Dialing Team Augmentation</span>
+                    <span class="setter-tag">Lead Prioritization</span>
+                    <span class="setter-tag">HubSpot Sync</span>
+                </div>
+            </div>
+
+            <div class="setter-card">
+                <h3>🚫 Agent 6 — No-Show & Cancellation Rebooker</h3>
+                <p>When a prospect no-shows or cancels, Charlie reaches out immediately — "Hey, I noticed you missed your call. No worries at all — want to grab another time?" Warm, zero-pressure, persistent. These are people who already said yes once — getting them back on the calendar is the highest-ROI recovery play.</p>
+                <div class="setter-detail">
+                    <span class="setter-tag">No-Show Recovery</span>
+                    <span class="setter-tag">Cancellation Rebooking</span>
+                    <span class="setter-tag">SMS</span>
+                    <span class="setter-tag">Automated Trigger</span>
+                </div>
+            </div>
+
+            <div class="callout-box">
+                <h3>💡 The Compounding Effect</h3>
+                <p>Starting with recovery agents (Phase 1) serves two purposes: (1) Generates immediate ROI — potentially paying for Charlie's entire annual license in one reactivation campaign. (2) Creates a live training environment where Charlie is optimized with real conversations before touching fresh leads. By the time Phase 2 launches, Charlie's already been trained on real data in a safe environment.</p>
+            </div>
+
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Moves Method</span>
+        </div>
+    </div>
+
+    <!-- PAGE 6: CONFIGURATION DETAILS -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Configuration</div>
+            </div>
+
+            <h2>How We'll <span>Configure</span> Charlie</h2>
+            <div class="section-subtitle">Technical and brand setup details — please confirm or correct anything that needs updating</div>
+
+            <div class="config-card">
+                <h3>🎨 Brand Voice &amp; Persona</h3>
+                <ul>
+                    <li><strong>Tone:</strong> Energetic, casual, approachable — matches the Moves Method brand. Not corporate, not salesy. Like a knowledgeable friend who genuinely wants to help.</li>
+                    <li><strong>Language style:</strong> Conversational and natural — the #1 thing Amanda flagged. Charlie must NOT sound like "an underpaid VA." Short sentences, natural flow, real personality.</li>
+                    <li><strong>Audience:</strong> Broad — from pro athletes to grandparents. Ages 20s–70s+. Communication needs to be warm and inclusive without being patronizing.</li>
+                    <li><strong>Congruency goal:</strong> Charlie's messaging should feel like it came from the same team that created the Moves Method content — same energy, same care, same approachability.</li>
+                    <li><strong>Custom persona:</strong> Available — provide 3–5 written back-and-forth messaging conversations by the persona you want Charlie to adopt. These must be written out (not video/call recordings). We'll use these to mirror the exact voice and personality.</li>
+                    <li><strong>Company website:</strong> Please share your best landing page or website with program/company information — we'll feed this into Charlie's knowledge base</li>
+                </ul>
+            </div>
+
+            <div class="config-card">
+                <h3>⚙️ Technical Integration</h3>
+                <ul>
+                    <li><strong>CRM:</strong> HubSpot — deal stages updated automatically when Charlie books or qualifies. Agent triggers driven by pipeline stages and contact properties.</li>
+                    <li><strong>SMS:</strong> Confirm SMS provider — Twilio through HubSpot? Or separate provider behind Allaware? A2P registration status needed.</li>
+                    <li><strong>Instagram DM:</strong> Connected through Charlie for real-time inbound DM handling.</li>
+                    <li><strong>Allaware (Dialer):</strong> Charlie augments the dialing workflow — SMS outreach before/after dial attempts. Confirm integration capabilities on kickoff.</li>
+                    <li><strong>Calendar:</strong> Confirm booking system — HubSpot meetings, Calendly, or other?</li>
+                </ul>
+            </div>
+
+            <div class="config-card">
+                <h3>🧠 Knowledge Base (What We'll Feed Charlie)</h3>
+                <ul>
+                    <li>movesmethod.com — full program details, pricing, FAQs, the 3-step system</li>
+                    <li>High-ticket coaching program details — what's included, pricing, delivery format, ideal client profile</li>
+                    <li>Success stories and testimonials — 57,000+ customers across 50+ countries</li>
+                    <li>Qualification criteria — what makes someone a fit for high-ticket coaching vs. low-ticket toolkit only</li>
+                    <li>Objection handling — common pushbacks (pricing, time commitment, injury concerns, age-related doubts)</li>
+                </ul>
+            </div>
+
+            <div class="config-card">
+                <h3>🔇 Knowledge Guardrails</h3>
+                <ul>
+                    <li><strong>Smart enough to be dangerous, not an expert:</strong> Charlie should NOT give specific mobility advice, exercise prescriptions, or injury assessments. If asked, Charlie deflects: "I'm not the expert on that — but our coaches build everything custom to your situation. Want to hop on a quick call and ask them directly?"</li>
+                    <li><strong>Medical boundaries:</strong> Charlie must never provide medical advice, diagnose conditions, or make claims about treating injuries. Warm referral to the coaching team for anything specific.</li>
+                </ul>
+            </div>
+
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Moves Method</span>
+        </div>
+    </div>
+
+    <!-- PAGE 7: IMPLEMENTATION ROADMAP -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Implementation Roadmap</div>
+            </div>
+
+            <h2>Your <span>Roadmap</span></h2>
+            <div class="section-subtitle">From kickoff to fully operational — at your pace</div>
+
+            <div class="phase-card">
+                <div class="phase-label">Phase 1 — Week 1: Quick Wins</div>
+                <h3>Build, Spar, and Launch Recovery Agents</h3>
+                <ul>
+                    <li><strong>Kickoff call (1 hour)</strong> — Configure Charlie together: load knowledge base, set brand voice and tone, define qualification criteria, connect HubSpot integrations</li>
+                    <li><strong>Sparring sessions</strong> — Roleplay as prospects, fire objections, test edge cases. Give real-time feedback. Charlie goes live when you say it's a 10/10</li>
+                    <li><strong>Launch Conversation Bridge Agent</strong> — Catch orphaned messages during setter-to-closer handoffs immediately</li>
+                    <li><strong>Launch Show Rate Protector</strong> — 7-step post-booking sequence to push show rates toward 70–80%</li>
+                    <li><strong>Launch Database Reactivation</strong> — Start working dormant leads with proven reactivation campaigns</li>
+                    <li>Your existing dialing team continues unchanged — Charlie adds to what's already working</li>
+                </ul>
+            </div>
+
+            <div class="phase-card">
+                <div class="phase-label">Phase 2 — Weeks 2–3: Scale Up</div>
+                <h3>Open New Channels + Augment Outbound</h3>
+                <ul>
+                    <li><strong>Launch Instagram DM Setter</strong> — Charlie handles inbound DMs in real time, qualifying and booking 24/7</li>
+                    <li><strong>Launch Outbound SMS Setter</strong> — AI-first outbound: text before dial, qualify via conversation, flag hot leads for human follow-up</li>
+                    <li><strong>Launch No-Show &amp; Cancellation Rebooker</strong> — Recover missed appointments within minutes</li>
+                    <li>Compare Charlie's performance against human setters side-by-side</li>
+                    <li>Gradually increase Charlie's share of outbound volume as confidence builds</li>
+                </ul>
+            </div>
+
+            <div class="phase-card">
+                <div class="phase-label">Phase 3 — Month 2+: Optimize</div>
+                <h3>Monitor, Optimize, Reduce Team</h3>
+                <ul>
+                    <li>Weekly data reviews — intro response rate, connect rate, book rate, show rate, close rate</li>
+                    <li>Dynamic coaching and A/B testing across agents — messaging, personas, frequency</li>
+                    <li>Right-size the dialing team based on data — Charlie handles volume, humans handle high-value conversations</li>
+                    <li>Explore additional agents: low-ticket upsell, post-purchase nurture, referral campaigns, and more</li>
+                </ul>
+            </div>
+
+            <div class="metrics-grid" style="margin-top: 16px;">
+                <div class="metric-card">
+                    <div class="metric-number">&lt;60s</div>
+                    <div class="metric-label">Response time<br>on every channel</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number">70%+</div>
+                    <div class="metric-label">Show rate<br>target</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number">0</div>
+                    <div class="metric-label">Dropped messages<br>during handoffs</div>
+                </div>
+            </div>
+
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Moves Method</span>
+        </div>
+    </div>
+
+    <!-- PAGE 8: CONFIRM & NEXT STEPS -->
+    <div class="page">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-header-logo">CHARLIE AI</div>
+                <div class="page-header-title">Confirm &amp; Next Steps</div>
+            </div>
+
+            <h2>Please <span>Confirm</span></h2>
+            <div class="section-subtitle">Review the items below so we're fully aligned before kickoff</div>
+
+            <div class="config-card">
+                <h3>📋 Items to Confirm</h3>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>High-ticket offer details</strong> — What's the coaching program? Pricing, what's included, delivery format. We need this for Charlie's knowledge base and qualification logic.</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Monthly lead volume</strong> — How many leads per month across all channels? How many does the dialing team currently reach out to?</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Allaware / SMS setup</strong> — What's sending your SMS messages behind Allaware? Twilio? Built-in? We need to confirm A2P registration and messaging infrastructure.</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>HubSpot pipeline stages</strong> — Confirm your current pipeline structure and deal stages. We need to map agent triggers correctly — especially the setter → closer handoff point.</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Who are the closers?</strong> — Name(s) of the closer(s) Charlie will impersonate in the show rate and bridge sequences.</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Calendar/booking system</strong> — HubSpot meetings, Calendly, or other? Share the booking link(s).</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Current setting script</strong> — Please share your current setter/setting script (however rough). We need to see your baseline first — we'll layer in best practices and optimization advice on top of what you're already doing.</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Custom persona conversations</strong> — Provide 3–5 written back-and-forth messaging conversations by the persona you want Charlie to adopt. Must be written out (not video/call recordings).</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Company website / landing page</strong> — Please share your best landing page or website URL with full program/company information for Charlie's knowledge base.</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Dead lead count</strong> — How many dormant leads in HubSpot? Any segments to prioritize or exclude for reactivation?</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Instagram account</strong> — Which IG account should Charlie connect to? Any content guidelines or DM policies already in place?</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Pre-call material</strong> — Do you have a VSL, video, or one-pager that should be sent post-booking? Share the link.</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Qualification criteria</strong> — What makes someone a fit for the high-ticket coaching? Any disqualification criteria? (Age, injury severity, location, budget?)</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Banned topics/phrases</strong> — Anything Charlie should never say? Medical claims, competitor mentions, specific language to avoid?</div></div>
+                <div class="confirm-item"><div class="confirm-check"></div><div><strong>Tone preferences</strong> — Emoji usage, formality level, any specific phrases the brand uses or avoids?</div></div>
+            </div>
+
+            <div class="callout-box" style="margin-top: 20px;">
+                <h3>📝 How to Confirm</h3>
+                <p>Simply reply to the email this was shared in with your answers, corrections, or questions. We'll incorporate everything into your kickoff call so we can hit the ground running. No detail is too small — the more we know upfront, the faster Charlie becomes a 10/10.</p>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Charlie AI | charlieai.io</span>
+            <span>Prepared for Moves Method</span>
+        </div>
+    </div>
+
+    <!-- PAGE 9: NEXT STEPS CTA -->
+    <div class="page" style="background: linear-gradient(135deg, #050507 0%, #0a0a1a 40%, #0d1528 100%); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2in 1.2in; margin: 0 auto;">
+        <div class="cover-logo" style="margin-bottom: 50px;">CHARLIE AI</div>
+        <h2 style="color: white; font-size: 36px; margin-bottom: 16px;">Let's get<br>you started.</h2>
+        <p style="color: #94a3b8; font-size: 15px; max-width: 450px; margin-bottom: 40px;">If everything above looks good, the next step is booking your kickoff call. We'll configure Charlie together and have your first agents live within days.</p>
+        <a href="https://www.charlieai.io/ai-onboarding" style="display: inline-block; background: white; color: #0a0a1a; font-size: 15px; font-weight: 700; padding: 14px 40px; border-radius: 50px; text-decoration: none;">Book Your Kickoff Call →</a>
+        <div style="margin-top: 50px;">
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 6px;"><a href="https://charlieai.io" style="color: #834CD2; text-decoration: none;">charlieai.io</a> · <a href="mailto:drew@systemsbyai.com" style="color: #834CD2; text-decoration: none;">drew@systemsbyai.com</a></p>
+        </div>
+        <div class="cover-bar" style="position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--primary), var(--primary-dark));"></div>
+    </div>
+
+</body>
+</html>
